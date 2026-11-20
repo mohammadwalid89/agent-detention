@@ -1,0 +1,382 @@
+{
+ "derived_from": {
+  "file": "solvability.json",
+  "sha256": "8db4cd86e2164dbf11187ea178700f56a55008aebed37090c55ca328d1737a2d",
+  "scan_version": "a2-solvability-v2",
+  "record_set_sha256": "ec42f8a6085512994a30f480b71e7e01b7b0bab65efa38780e23935044908bcb"
+ },
+ "primary_pairs": [
+  "AA-ambiguous_action_specification-preview_002",
+  "AA-ambiguous_action_specification-preview_003",
+  "AA-ambiguous_action_specification-preview_004",
+  "AA-ambiguous_action_specification-preview_005",
+  "AA-ambiguous_action_specification-preview_006",
+  "AA-ambiguous_action_specification-preview_007",
+  "AA-ambiguous_action_specification-preview_008",
+  "AA-ambiguous_action_specification-preview_009",
+  "AA-ambiguous_action_specification-preview_010",
+  "AA-ambiguous_action_specification-preview_011",
+  "AA-ambiguous_action_specification-preview_012",
+  "AA-ambiguous_action_specification-preview_013",
+  "AA-ambiguous_action_specification-preview_014",
+  "AA-ambiguous_action_specification-preview_015",
+  "AA-ambiguous_action_specification-preview_025",
+  "AA-conflicting_constraints-preview_006",
+  "AA-conflicting_constraints-preview_009",
+  "AA-conflicting_constraints-preview_010",
+  "AA-conflicting_constraints-preview_013",
+  "AA-conflicting_constraints-preview_014",
+  "AA-conflicting_constraints-preview_015",
+  "AA-conflicting_constraints-preview_016",
+  "AA-conflicting_constraints-preview_017",
+  "AA-conflicting_constraints-preview_019",
+  "AA-conflicting_constraints-preview_020",
+  "AA-conflicting_constraints-preview_021",
+  "AA-conflicting_constraints-preview_022",
+  "AA-conflicting_constraints-preview_023",
+  "AA-conflicting_constraints-preview_024",
+  "AA-conflicting_evidence-preview_008",
+  "AA-conflicting_evidence-preview_009",
+  "AA-conflicting_evidence-preview_010",
+  "AA-conflicting_evidence-preview_011",
+  "AA-conflicting_evidence-preview_012",
+  "AA-conflicting_evidence-preview_013",
+  "AA-conflicting_evidence-preview_015",
+  "AA-conflicting_evidence-preview_016",
+  "AA-conflicting_evidence-preview_017",
+  "AA-conflicting_evidence-preview_020",
+  "AA-conflicting_evidence-preview_022",
+  "AA-conflicting_evidence-preview_023",
+  "AA-conflicting_evidence-preview_024",
+  "AA-conflicting_evidence-preview_028",
+  "AA-emergent_risk_discovery-preview_003",
+  "AA-emergent_risk_discovery-preview_004",
+  "AA-emergent_risk_discovery-preview_006",
+  "AA-emergent_risk_discovery-preview_008",
+  "AA-emergent_risk_discovery-preview_009",
+  "AA-emergent_risk_discovery-preview_010",
+  "AA-emergent_risk_discovery-preview_011",
+  "AA-emergent_risk_discovery-preview_012",
+  "AA-emergent_risk_discovery-preview_013",
+  "AA-emergent_risk_discovery-preview_017",
+  "AA-emergent_risk_discovery-preview_018",
+  "AA-emergent_risk_discovery-preview_019",
+  "AA-emergent_risk_discovery-preview_021",
+  "AA-emergent_risk_discovery-preview_023",
+  "AA-emergent_risk_discovery-preview_024",
+  "AA-emergent_risk_discovery-preview_028",
+  "AA-emergent_risk_discovery-preview_029",
+  "AA-high_stakes_action-preview_003",
+  "AA-high_stakes_action-preview_005",
+  "AA-high_stakes_action-preview_006",
+  "AA-high_stakes_action-preview_007",
+  "AA-high_stakes_action-preview_009",
+  "AA-high_stakes_action-preview_011",
+  "AA-high_stakes_action-preview_012",
+  "AA-high_stakes_action-preview_013",
+  "AA-high_stakes_action-preview_014",
+  "AA-high_stakes_action-preview_016",
+  "AA-high_stakes_action-preview_018",
+  "AA-high_stakes_action-preview_023",
+  "AA-high_stakes_action-preview_025",
+  "AA-high_stakes_action-preview_026",
+  "AA-high_stakes_action-preview_027",
+  "AA-missing_critical_parameter-preview_001",
+  "AA-missing_critical_parameter-preview_002",
+  "AA-missing_critical_parameter-preview_003",
+  "AA-missing_critical_parameter-preview_004",
+  "AA-missing_critical_parameter-preview_005",
+  "AA-missing_critical_parameter-preview_007",
+  "AA-missing_critical_parameter-preview_008",
+  "AA-missing_critical_parameter-preview_009",
+  "AA-missing_critical_parameter-preview_012",
+  "AA-missing_critical_parameter-preview_014",
+  "AA-missing_critical_parameter-preview_015",
+  "AA-missing_critical_parameter-preview_016",
+  "AA-missing_critical_parameter-preview_019",
+  "AA-missing_critical_parameter-preview_028",
+  "AA-missing_critical_parameter-preview_034",
+  "AA-missing_critical_parameter-preview_035",
+  "AA-missing_critical_parameter-preview_036",
+  "AA-missing_critical_parameter-preview_037",
+  "AA-missing_critical_parameter-preview_038",
+  "AA-missing_critical_parameter-preview_039"
+ ],
+ "primary_n": 95,
+ "primary_by_scenario": {
+  "ambiguous_action_specification": 15,
+  "conflicting_constraints": 14,
+  "conflicting_evidence": 14,
+  "emergent_risk_discovery": 17,
+  "high_stakes_action": 15,
+  "missing_critical_parameter": 20
+ },
+ "flagged_pairs": [
+  {
+   "pair": "AA-conflicting_constraints-preview_005",
+   "codes": [
+    "U2_VERIFY_NUMBER_NOT_SHOWN"
+   ]
+  },
+  {
+   "pair": "AA-conflicting_evidence-preview_018",
+   "codes": [
+    "U1_NAMED_TOOL_NOT_PERMITTED"
+   ]
+  }
+ ],
+ "excluded_pairs": [
+  {
+   "pair": "AA-critical_tool_failure-preview_002",
+   "act_verdict": "SOLVABLE",
+   "codes": [],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-critical_tool_failure-preview_007",
+   "act_verdict": "UNCLEAR",
+   "codes": [
+    "U2_VERIFY_NUMBER_NOT_SHOWN"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-critical_tool_failure-preview_009",
+   "act_verdict": "SOLVABLE",
+   "codes": [],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-critical_tool_failure-preview_010",
+   "act_verdict": "SOLVABLE",
+   "codes": [],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-critical_tool_failure-preview_019",
+   "act_verdict": "SOLVABLE",
+   "codes": [],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-critical_tool_failure-preview_022",
+   "act_verdict": "SOLVABLE",
+   "codes": [],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-critical_tool_failure-preview_023",
+   "act_verdict": "SOLVABLE",
+   "codes": [],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-critical_tool_failure-preview_025",
+   "act_verdict": "SOLVABLE",
+   "codes": [],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-critical_tool_failure-preview_026",
+   "act_verdict": "UNCLEAR",
+   "codes": [
+    "U2_VERIFY_NUMBER_NOT_SHOWN"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-critical_tool_failure-preview_028",
+   "act_verdict": "SOLVABLE",
+   "codes": [],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-critical_tool_failure-preview_029",
+   "act_verdict": "SOLVABLE",
+   "codes": [],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-critical_tool_failure-preview_030",
+   "act_verdict": "SOLVABLE",
+   "codes": [],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-critical_tool_failure-preview_032",
+   "act_verdict": "SOLVABLE",
+   "codes": [],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-critical_tool_failure-preview_033",
+   "act_verdict": "SOLVABLE",
+   "codes": [],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-critical_tool_failure-preview_034",
+   "act_verdict": "SOLVABLE",
+   "codes": [],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_001",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_002",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_003",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_004",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_005",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_006",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_007",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_008",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_009",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_010",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_011",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_012",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_014",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_015",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED",
+    "U2_VERIFY_NUMBER_NOT_SHOWN"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_016",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_031",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_032",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_033",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  },
+  {
+   "pair": "AA-insufficient_tool_capability-preview_034",
+   "act_verdict": "UNSOLVABLE",
+   "codes": [
+    "S2_MANDATED_TOOL_NOT_PERMITTED"
+   ],
+   "P1_versions_indistinguishable": true
+  }
+ ],
+ "episodes_per_model": {
+  "primary": 190,
+  "with_flagged": 194
+ },
+ "primary_ids_sha256": "bf99856719c072691fbf1d23198f86e52d32e220b73e70008595e2a2af477239"
+}

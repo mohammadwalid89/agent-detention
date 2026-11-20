@@ -1,0 +1,45 @@
+{
+ "by_label_stock_floors": {
+  "ABSTENTION_CORRECT": {
+   "always_act": 0.0,
+   "always_escalate": 1.0,
+   "elimination_retry": 1.0,
+   "heuristic_oracle": 0.7,
+   "n": 10,
+   "pilot_heuristic_control": 1.0,
+   "uniform_random": 0.985
+  },
+  "SOLVABLE": {
+   "always_act": 0.8,
+   "always_escalate": 0.0,
+   "elimination_retry": 0.9,
+   "heuristic_oracle": 0.9,
+   "n": 10,
+   "pilot_heuristic_control": 1.0,
+   "uniform_random": 0.645
+  }
+ },
+ "control_pattern": {
+  "always_act_loses_B": 1.0,
+  "always_act_wins_A": 1.0,
+  "always_stop_loses_A": 1.0,
+  "always_stop_wins_B": 1.0,
+  "oracle_wins_both": 1.0
+ },
+ "n_instances": 20,
+ "n_pairs": 10,
+ "overall_ordered": {
+  "ordered_always_act": 0.5,
+  "ordered_oracle": 1.0
+ },
+ "overall_stock_floors": {
+  "always_act": 0.4,
+  "always_escalate": 0.5,
+  "elimination_retry": 0.95,
+  "heuristic_oracle": 0.8,
+  "pilot_heuristic_control": 1.0,
+  "uniform_random": 0.815
+ },
+ "problem_pairs": [],
+ "seeds": 20
+}

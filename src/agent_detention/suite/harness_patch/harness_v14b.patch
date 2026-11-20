@@ -1,0 +1,543 @@
+--- a/vera/delegation/adapters.py
++++ b/vera/delegation/adapters.py
+@@ -456,6 +456,10 @@
+ ERROR_CLI_MISSING = "CLI_MISSING"
+ ERROR_CONFIG = "CONFIG_ERROR"
+ ERROR_KEY_MISSING = "KEY_MISSING"
++# v14b: the provider's own safeguard declined THIS message ("Sonnet 5.5's safeguards flagged this message ... aup").  It is a
++# property of the prompt, not of the route, transport or auth: it is neither a model failure nor an infrastructure/route error.
++ERROR_PROVIDER_REFUSAL = "PROVIDER_REFUSAL"
++PROVIDER_REFUSAL_MESSAGE_TABLE = ("safeguards flagged this message",)
+ 
+ STOP_PAUSE = "PAUSE_AND_RESUME"
+ STOP_RUN = "STOP_RUN"
+@@ -567,6 +571,10 @@
+     for message in ROUTE_LIMIT_MESSAGE_TABLE:
+         if message in lowered:
+             return ERROR_ROUTE_LIMIT, message
++    # Last, so a real auth/limit error is never reclassified as a refusal.
++    for message in PROVIDER_REFUSAL_MESSAGE_TABLE:
++        if message in lowered:
++            return ERROR_PROVIDER_REFUSAL, message
+     return "", ""
+ 
+ 
+@@ -2056,6 +2064,7 @@
+                 ERROR_AUTH_EXPIRED,
+                 ERROR_ROUTE_LIMIT,
+                 ERROR_MODEL_FAILURE,
++                ERROR_PROVIDER_REFUSAL,  # not retried here: the runner retries a refused call once, and records both
+                 ERROR_CONFIG,
+                 ERROR_CLI_MISSING,
+             ):
+--- a/vera/delegation/case_text.py
++++ b/vera/delegation/case_text.py
+@@ -27,8 +27,25 @@
+     """The case-text overlay is missing, stale or incomplete."""
+ 
+ 
++# Opt-in (v14b suite integration): which overlay and which source bytes ``load_case_text()`` binds to.
++# The default is the set-12 pair above, byte for byte the old behaviour; ``select_overlay`` swaps in a
++# suite overlay and its own source file for the life of the process, ``reset_overlay`` restores the default.
++_ACTIVE = {"overlay": CASE_TEXT_PATH, "source": SOURCE_PATH}
++
++
++def select_overlay(overlay_path: str | Path, source_path: str | Path) -> None:
++    """Bind ``load_case_text()`` to ``overlay_path``, which must be bound to ``source_path``'s bytes."""
++    _ACTIVE["overlay"], _ACTIVE["source"] = Path(overlay_path), Path(source_path)
++    _load.cache_clear()
++
++
++def reset_overlay() -> None:
++    _ACTIVE["overlay"], _ACTIVE["source"] = CASE_TEXT_PATH, SOURCE_PATH
++    _load.cache_clear()
++
++
+ @lru_cache(maxsize=4)
+-def _load(path_text: str) -> dict:
++def _load(path_text: str, source_text: str) -> dict:
+     path = Path(path_text)
+     if not path.is_file():
+         raise CaseTextError(f"case-text overlay is missing: {path}")
+@@ -38,16 +55,17 @@
+     body = {key: value for key, value in data.items() if key != "digest"}
+     if data.get("digest") != sha256_text(canonical_json(body)):
+         raise CaseTextError("case-text overlay digest does not verify")
+-    if data["source"]["sha256"] != sha256_file(SOURCE_PATH):
+-        raise CaseTextError("case-text overlay was built for different set-12 bytes")
++    if data["source"]["sha256"] != sha256_file(Path(source_text)):
++        raise CaseTextError("case-text overlay was built for different source bytes")
+     return data
+ 
+ 
+-def load_case_text(path: str | Path = CASE_TEXT_PATH) -> dict:
+-    return _load(str(path))
++def load_case_text(path: str | Path | None = None) -> dict:
++    """The active overlay (default: set 12) unless an explicit ``path`` of the active source is given."""
++    return _load(str(path or _ACTIVE["overlay"]), str(_ACTIVE["source"]))
+ 
+ 
+-def case_text_status(path: str | Path = CASE_TEXT_PATH) -> str:
++def case_text_status(path: str | Path | None = None) -> str:
+     """``DRAFT_PENDING_OWNER_REVIEW`` until the owner signs; the pilot gate checks this."""
+     return str(load_case_text(path).get("status") or "")
+ 
+@@ -81,7 +99,12 @@
+             f"{instance.mechanism_id}: the overlay was written for a different revision "
+             f"of this mechanism (graph hash {recorded[:12]!r} vs {actual[:12]!r})"
+         )
+-    missing = sorted(set(instance.registry) - set(entry.get("signal_labels") or {}))
++    # Opt-in per-variant text (suite overlays: the two variants of a pair are different tasks with
++    # different instructions).  Set-12 entries carry no ``variants`` key and are returned unchanged.
++    per_variant = (entry.get("variants") or {}).get(instance.variant_id)
++    if per_variant:
++        entry = {**entry, **per_variant}
++    missing =sorted(set(instance.registry) - set(entry.get("signal_labels") or {}))
+     if missing:
+         raise CaseTextError(f"{instance.mechanism_id}: no label for signal(s) {missing}")
+     if not str(entry.get("goal_text") or "").strip():
+@@ -117,4 +140,6 @@
+     "case_text_status",
+     "load_case_text",
+     "load_set12_instances",
++    "reset_overlay",
++    "select_overlay",
+ ]
+--- a/vera/delegation/runner_v13.py
++++ b/vera/delegation/runner_v13.py
+@@ -45,6 +45,7 @@
+     ERROR_CONFIG,
+     ERROR_KEY_MISSING,
+     ERROR_MODEL_FAILURE,
++    ERROR_PROVIDER_REFUSAL,
+     ERROR_ROUTE_LIMIT,
+     ERROR_TRANSPORT,
+     SERVED_MODEL_MISMATCH,
+@@ -484,6 +485,9 @@
+     route_limit_retry_seconds: float | None = None
+     cli_binary: str = ""
+     run_as_user: str = ""
++    # v14b: part of the adapter's isolation spec, hence of its fingerprint.  The preflight and the runner must build the
++    # adapter from this same value, so it is configured here (default "" = system temp dir, the old behaviour).
++    isolation_root: str = ""
+     raw: Mapping = field(default_factory=dict)
+ 
+     @classmethod
+@@ -561,6 +565,7 @@
+             route_limit_retry_seconds=retry_after,
+             cli_binary=str(merged.get("cli_binary") or ""),
+             run_as_user=str(merged.get("run_as_user") or ""),
++            isolation_root=str(merged.get("isolation_root") or ""),
+             raw=dict(merged),
+         )
+ 
+@@ -1062,6 +1067,7 @@
+         "job_reference": job,
+         "expires_at": expires_at,
+         "case_text_overlay_digest": signed,
++        "claude_subscription_calls_approved": True,   # carried through: the runner re-validates this dict (fix 2026-11-18)
+         "run_scope": RUN_SCOPE_PILOT,
+     }
+ 
+@@ -1144,6 +1150,9 @@
+     row: Mapping
+     route_calls: Counter = field(default_factory=Counter)
+     route_errors: Counter = field(default_factory=Counter)
++    # v14b: provider safeguard refusals are their own outcome: counted here, NOT in route_errors / error_kinds, so they can
++    # never classify the unit as an infrastructure or route failure (``_episode_verdict`` only reads error_kinds).
++    route_refusals: Counter = field(default_factory=Counter)
+     error_kinds: list[str] = field(default_factory=list)
+     call_latencies: list[dict] = field(default_factory=list)
+     served_model_checks: Counter = field(default_factory=Counter)
+@@ -1171,7 +1180,9 @@
+             "served_model_id": result.served_model_id,
+             "served_model_check": served_verdict,
+         })
+-        if result.error_kind:
++        if result.error_kind == ERROR_PROVIDER_REFUSAL:
++            self.route_refusals[route_id] += 1
++        elif result.error_kind:
+             self.route_errors[route_id] += 1
+             self.error_kinds.append(result.error_kind)
+             if result.error_kind == MODEL_SUBSTITUTION:
+@@ -1274,6 +1285,7 @@
+         self._calls = 0
+         self._successes = 0
+         self._errors: Counter = Counter()
++        self._refusals = 0  # v14b: PROVIDER_REFUSAL results (not in ``_errors``)
+         self._last_error = ""
+         self._latencies: deque[float] = deque(maxlen=5000)
+         self._success_latencies: deque[float] = deque(maxlen=5000)
+@@ -1379,6 +1391,7 @@
+                 "calls": self._calls,
+                 "successes": self._successes,
+                 "errors": dict(sorted(self._errors.items())),
++                "refusals": self._refusals,
+                 "last_error": self._last_error,
+                 "start_interval_seconds": round(self._start_interval, 6),
+                 "concurrency": self.settings.concurrency,
+@@ -1433,6 +1446,28 @@
+         temperature: float,
+         context: EpisodeContext | None,
+     ) -> AdapterResult:
++        """One logical model call.  v14b: a provider safeguard refusal (``PROVIDER_REFUSAL``) is retried AT MOST ONCE, with the
++        identical messages.  Both attempts are real calls: each is paced, charged against ``max_model_calls``, written to the
++        episode transcript and ledger as a refusal, and counted under refusals (never as a route/infrastructure error).  If
++        the retry is refused too, that refusal is returned and the caller records the outcome."""
++        result = self._run_task_once(
++            inner, messages, max_tokens=max_tokens, temperature=temperature, context=context
++        )
++        if result.error_kind == ERROR_PROVIDER_REFUSAL:
++            result = self._run_task_once(
++                inner, messages, max_tokens=max_tokens, temperature=temperature, context=context
++            )
++        return result
++
++    def _run_task_once(
++        self,
++        inner: object,
++        messages: list[dict],
++        *,
++        max_tokens: int,
++        temperature: float,
++        context: EpisodeContext | None,
++    ) -> AdapterResult:
+         auto_resumed = self._wait_turn()
+         if auto_resumed:
+             self._on_auto_resume(self.route_id, "configured retry time reached")
+@@ -1504,6 +1539,8 @@
+             if result.ok:
+                 self._successes += 1
+                 self._success_latencies.append(round(latency_ms, 3))
++            elif result.error_kind == ERROR_PROVIDER_REFUSAL:
++                self._refusals += 1  # v14b: its own outcome, never a route error
+             elif result.error_kind:
+                 self._errors[result.error_kind] += 1
+                 self._last_error = result.error
+@@ -2172,6 +2209,7 @@
+             "route_calls": {},
+             "route_successes": {},
+             "route_errors": {},
++            "route_refusals": {},
+         }
+         self._model_calls_total = 0
+         self._segment_model_calls = 0
+@@ -2517,6 +2555,18 @@
+             if result.ok:
+                 successes = self._state.setdefault("route_successes", {})
+                 successes[route_id] = int(successes.get(route_id, 0)) + 1
++            elif result.error_kind == ERROR_PROVIDER_REFUSAL:
++                # v14b: counted apart from route errors, and written to the signed ledger call by call
++                refusals = self._state.setdefault("route_refusals", {})
++                refusals[route_id] = int(refusals.get(route_id, 0)) + 1
++                self._append_ledger({
++                    "kind": "provider_refusal",
++                    "route_id": route_id,
++                    "error_kind": ERROR_PROVIDER_REFUSAL,
++                    "message": str(result.error or "")[:300],
++                    "latency_ms": round(float(latency_ms or 0.0), 3),
++                    "route_refusals_total": int(refusals[route_id]),
++                })
+             elif result.error_kind:
+                 errors = self._state.setdefault("route_errors", {})
+                 per_route = errors.setdefault(route_id, {})
+@@ -2524,6 +2574,21 @@
+             self._state["model_calls_total"] = self._model_calls_total
+         self._persist_state()
+ 
++    def _slots_for_row(self, row: Mapping) -> dict:
++        """The four registry slots a row may touch.
++
++        v14b (2026-11-18): a solo row shows no peer menu and has delegation budget 0, so only its own (SELF)
++        route is ever called.  Every slot of a solo row therefore resolves to that SELF route, which lets a
++        single-route (Sonnet-only) run have one measured configuration, one dispatcher and no unmeasured peer
++        route (under ``claude_only`` every slot map includes Haiku).  Non-solo rows are unchanged: all four
++        registry slots.  Cell construction (``_cell_for_row``) deliberately still uses the real registry slots,
++        so cell identity does not move.
++        """
++        slots = _registry_slots_for(str(row["model_slot"]), self.registry)
++        if self.solo or row.get("solo"):
++            return {name: slots[SLOT_SELF] for name in slots}
++        return slots
++
+     def _validate_rows_against_registry(self) -> None:
+         for row in self.rows:
+             slot = str(row["model_slot"])
+@@ -2538,7 +2603,7 @@
+                     f"row {row.get('_row_index')}: route {declared!r} contradicts the "
+                     f"registry mapping {expected_primary!r} for {slot}"
+                 )
+-            for slot_name, route in slots.items():
++            for slot_name, route in self._slots_for_row(row).items():
+                 if route["route_id"] not in self.config.routes:
+                     raise RunnerConfigError(
+                         f"row {row.get('_row_index')}: route {route['route_id']!r} "
+@@ -2574,6 +2639,9 @@
+                 str(key): {str(kind): int(count) for kind, count in dict(value or {}).items()}
+                 for key, value in dict(data.get("route_errors") or {}).items()
+             }
++            self._state["route_refusals"] = {
++                str(key): int(value) for key, value in dict(data.get("route_refusals") or {}).items()
++            }
+             self._model_calls_total = int(self._state["model_calls_total"])
+ 
+     def _persist_state(self) -> None:
+@@ -2600,6 +2668,9 @@
+                         dict(self._state.get("route_errors") or {}).items()
+                     )
+                 },
++                "route_refusals": dict(
++                    sorted(dict(self._state.get("route_refusals") or {}).items())
++                ),
+             }
+             atomic_write_json(self._state_path, payload)
+ 
+@@ -2901,7 +2972,7 @@
+             return
+         used_route_ids: list[str] = []
+         for row in self.rows:
+-            slots = _registry_slots_for(str(row["model_slot"]), self.registry)
++            slots = self._slots_for_row(row)
+             for route in slots.values():
+                 if route["route_id"] not in used_route_ids:
+                     used_route_ids.append(route["route_id"])
+@@ -2916,6 +2987,7 @@
+                     route,
+                     binary=settings.cli_binary or None,
+                     run_as_user=settings.run_as_user or None,
++                    isolation_root=settings.isolation_root,
+                 )
+             )
+             # Every child process an adapter can start must have a finite hard timeout.
+@@ -3488,7 +3560,7 @@
+                     orchestrator, peers, row, key
+                 )
+             else:
+-                slots = _registry_slots_for(str(row["model_slot"]), self.registry)
++                slots = self._slots_for_row(row)
+                 orchestrator_route = str(slots[SLOT_SELF]["route_id"])
+                 orchestrator = RouteAdapter(
+                     self._dispatchers[orchestrator_route],
+@@ -3714,6 +3786,7 @@
+             "first_choice": first_choice,
+             "route_calls": dict(context.route_calls),
+             "route_errors": dict(context.route_errors),
++            "route_refusals": dict(context.route_refusals),  # v14b: provider safeguard refusals, not errors
+             "route_latency": context.latency_summary(),
+             "call_latencies": list(context.call_latencies),
+             "served_model_checks": dict(context.served_model_checks),
+@@ -3751,6 +3824,7 @@
+             "result_digest": payload["result_digest"],
+             "route_calls": dict(context.route_calls),
+             "route_errors": dict(context.route_errors),
++            "route_refusals": dict(context.route_refusals),
+             "error_kinds": error_kinds,
+             "first_choice": first_choice,
+             "duration_seconds": round(elapsed, 6),
+@@ -3771,7 +3845,7 @@
+ 
+     def _detention_adapters(self, row: Mapping, resume_key: str):
+         directory = self._detention_dir() / DEFAULT_EPISODE_CALL_DIR
+-        slots = _registry_slots_for(str(row["model_slot"]), self.registry)
++        slots = self._slots_for_row(row)
+         orchestrator_route = str(slots[SLOT_SELF]["route_id"])
+         dispatcher = self._dispatchers[orchestrator_route]
+         orchestrator = RouteAdapter(
+@@ -4175,8 +4249,10 @@
+             "rows_completed_total": 0,
+             "rows_failed_total": 0,
+             "rows_interrupted_total": 0,
++            "rows_refused_total": 0,  # v14b: rows whose review call was refused by the provider safeguard (after one retry)
+             "route_calls": {},
+             "route_errors": {},
++            "route_refusals": {},
+             "latency_by_route": {},
+             "updated_at_utc": utc_now(),
+         }
+@@ -4221,6 +4297,11 @@
+                 "rows_interrupted_total": int(
+                     loaded_state.get("rows_interrupted_total") or 0
+                 ),
++                "rows_refused_total": int(loaded_state.get("rows_refused_total") or 0),
++                "route_refusals": {
++                    str(key): int(value)
++                    for key, value in dict(loaded_state.get("route_refusals") or {}).items()
++                },
+                 "route_calls": {
+                     str(key): int(value)
+                     for key, value in dict(loaded_state.get("route_calls") or {}).items()
+@@ -4433,9 +4514,12 @@
+         rows_completed = 0
+         rows_failed = 0
+         rows_interrupted = 0
++        rows_refused = 0
+         stopped = False
+         route_calls: Counter = Counter(state.get("route_calls") or {})
+         route_errors: Counter = Counter(state.get("route_errors") or {})
++        route_refusals: Counter = Counter(state.get("route_refusals") or {})
++        refused_keys: set[str] = set()  # rows refused in THIS invocation (a refused row is re-attempted on resume)
+         latency_by_route: dict[str, list[float]] = {
+             str(key): [float(item) for item in list(value or [])]
+             for key, value in dict(state.get("latency_by_route") or {}).items()
+@@ -4446,6 +4530,9 @@
+                 route_calls[route_id] += int(count)
+             for route_id, count in context.route_errors.items():
+                 route_errors[route_id] += int(count)
++            for route_id, count in context.route_refusals.items():
++                route_refusals[route_id] += int(count)
++            state["route_refusals"] = dict(sorted(route_refusals.items()))
+             for record in context.call_latencies:
+                 latency_by_route.setdefault(
+                     str(record.get("route_id")), []
+@@ -4536,7 +4623,11 @@
+                     if isinstance(arm_error, DetentionReviewError) and arm_error.error_kind:
+                         # The errored call is evidence even where no dispatcher recorded it
+                         # (a dry run bypasses the route pools).
+-                        if arm_error.error_kind not in context.error_kinds:
++                        if arm_error.error_kind == ERROR_PROVIDER_REFUSAL:
++                            # v14b: a refusal is never an error kind; count it only if no dispatcher did
++                            if not context.route_refusals:
++                                context.route_refusals[str(getattr(cell, "orchestrator_model_id", "") or "unrecorded")] += 1
++                        elif arm_error.error_kind not in context.error_kinds:
+                             context.error_kinds.append(arm_error.error_kind)
+                     absorb_context(context)
+                     if stop_error is not None:
+@@ -4675,6 +4766,53 @@
+                             )
+                             row_result = "skip"
+                         break
++                    if (
++                        isinstance(arm_error, DetentionReviewError)
++                        and arm_error.error_kind == ERROR_PROVIDER_REFUSAL
++                    ):
++                        # v14b: the provider's safeguard declined the review prompt, again after the one retry the route
++                        # dispatcher makes.  This is the arm's own recorded outcome (PROVIDER_REFUSAL): not an infrastructure
++                        # or route error, not a harness fault, and it never interrupts or stops the phase.  Only real
++                        # transport/auth/route errors reach the branches above.  The refused row is not a completed result
++                        # (no outcome exists), so it is written to its own signed record and re-attempted on resume.
++                        rows_refused += 1
++                        refused_keys.add(key)
++                        state["rows_refused_total"] = int(state["rows_refused_total"]) + 1
++                        refusal_record = signer.sign_mapping({
++                            "kind": "vera.v14b.detention_refusal.v1",
++                            **self._label_fields(),
++                            "run_id": self.run_id,
++                            "phase": "detention",
++                            "resume_key": key,
++                            "episode_id": episode_id,
++                            "arm": arm,
++                            "outcome": ERROR_PROVIDER_REFUSAL,
++                            "message": str(arm_error.error)[:400],
++                            "route_calls": dict(context.route_calls),
++                            "route_refusals": dict(context.route_refusals),
++                            "call_latencies": list(context.call_latencies),
++                            "recorded_at_utc": utc_now(),
++                        })
++                        refusal_dir = detention / "refusals"
++                        refusal_dir.mkdir(parents=True, exist_ok=True)
++                        atomic_write_json(
++                            refusal_dir / (safe_component(sha256_text(key)[:24]) + ".json"), refusal_record
++                        )
++                        self._append_ledger({
++                            "kind": "detention_row_refused",
++                            "phase": "detention",
++                            "resume_key": key,
++                            "episode_id": episode_id,
++                            "arm": arm,
++                            "outcome": ERROR_PROVIDER_REFUSAL,
++                            "route_calls": dict(context.route_calls),
++                            "route_refusals": dict(context.route_refusals),
++                            "rows_refused_total": int(state["rows_refused_total"]),
++                        })
++                        persist_state("running", "refused", episode_id=episode_id, arm=arm)
++                        self._emit("detention_row_refused", {"resume_key": key, "arm": arm})
++                        row_result = "skip"
++                        break
+                     if arm_error is not None:
+                         rows_failed += 1
+                         state["rows_failed_total"] = int(state["rows_failed_total"]) + 1
+@@ -4719,6 +4857,7 @@
+                     "duration_seconds": round(elapsed, 6),
+                     "route_calls": dict(context.route_calls),
+                     "route_errors": dict(context.route_errors),
++                    "route_refusals": dict(context.route_refusals),
+                     "route_latency": context.latency_summary(),
+                     "call_latencies": list(context.call_latencies),
+                     "served_model_checks": dict(context.served_model_checks),
+@@ -4776,7 +4915,10 @@
+         rows_completed_total = int(state["rows_completed_total"])
+         rows_failed_total = int(state["rows_failed_total"])
+         rows_interrupted_total = int(state["rows_interrupted_total"])
+-        all_planned_completed = len(completed) >= rows_planned
++        rows_refused_total = int(state.get("rows_refused_total") or 0)
++        # v14b: a row refused by the provider safeguard is accounted for (it has its own recorded outcome), so a phase in which
++        # every planned row is completed or refused is a completed phase; it is reported as such, with the refusals counted.
++        all_planned_completed = len(completed) + len(refused_keys - set(completed)) >= rows_planned
+         if stopped:
+             status = "stopped_incomplete"
+         elif all_planned_completed:
+@@ -4824,6 +4966,10 @@
+             "rows_failed_this_invocation": rows_failed,
+             "rows_interrupted": rows_interrupted_total,
+             "rows_interrupted_this_invocation": rows_interrupted,
++            "rows_refused": rows_refused_total,
++            "rows_refused_this_invocation": rows_refused,
++            "refused_row_keys_this_invocation": sorted(refused_keys),
++            "route_refusals": dict(sorted(route_refusals.items())),
+             "interruption_disposition": {
+                 "status": final_state.get("status"),
+                 "last_disposition": final_state.get("last_disposition"),
+@@ -4862,6 +5008,7 @@
+             "rows_completed_this_invocation": rows_completed,
+             "rows_failed": rows_failed_total,
+             "rows_interrupted": rows_interrupted_total,
++            "rows_refused": rows_refused_total,
+             "interruption_disposition": summary["interruption_disposition"],
+         })
+         ledger_records, ledger_problems = read_jsonl(self._ledger_path)
+@@ -5177,6 +5324,8 @@
+             "model_calls_total": self._model_calls_total,
+             "model_calls_this_segment": self._segment_model_calls,
+             "max_model_calls": self.config.max_model_calls,
++            # v14b: provider safeguard refusals are reported on their own, never inside route/infrastructure errors
++            "route_refusals": dict(sorted(dict(self._state.get("route_refusals") or {}).items())),
+             "route_counters": route_counters,
+             "route_latency": {
+                 route_id: dict(counters.get("latency") or {})
+--- a/vera/pilot/instances.py
++++ b/vera/pilot/instances.py
+@@ -254,7 +254,26 @@
+         }
+ 
+ 
++def _specialise(mechanism: dict, variant: dict) -> dict:
++    """Opt-in per-variant overrides (suite adapters).  A variant that carries neither
++    ``entry_tables`` nor ``forbidden_actions`` returns the mechanism unchanged, so every existing
++    record (sets 04-12) takes the old path byte for byte."""
++    if "entry_tables" not in variant and "forbidden_actions" not in variant:
++        return mechanism
++    specialised = dict(mechanism)
++    if "entry_tables" in variant:
++        entry_state = dict(mechanism["entry_state"])
++        entry_state["tables"] = copy.deepcopy(variant["entry_tables"])
++        specialised["entry_state"] = entry_state
++    if "forbidden_actions" in variant:
++        specialised["forbidden_actions"] = list(variant["forbidden_actions"])
++    return specialised
++
++
+ def _instance_from_record(mechanism: dict, variant: dict) -> Instance:
++    # the specialised copy still lists BOTH variants (paired_variants reads them) and is what later
++    # re-analysis (conditions.py, set10.py) must see, so it replaces ``mechanism`` for good
++    mechanism = _specialise(mechanism, variant)
+     analysis = analyse_instance(mechanism, variant)
+     entry_state = mechanism["entry_state"]
+     required = list(analysis["required_postconditions"])
+@@ -283,6 +302,7 @@
+         shortest_path_length=analysis.get("shortest_path_length"),
+         n_distinct_valid_paths=int(analysis.get("n_distinct_valid_paths") or 0),
+         abstention_actions=list(analysis.get("abstention_actions") or []),
++        goal_text=str(variant.get("goal_text") or ""),
+     )
+ 
+ 

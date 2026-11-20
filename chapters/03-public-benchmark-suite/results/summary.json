@@ -1,0 +1,90 @@
+{
+ "all_tiers": {
+  "instances": 528,
+  "pairs": 264,
+  "rejected": 0
+ },
+ "record_set_sha256": "ec42f8a6085512994a30f480b71e7e01b7b0bab65efa38780e23935044908bcb",
+ "scan": {
+  "act_task_hash_mismatches": 0,
+  "act_versions": 131,
+  "act_versions_with_a_verify_step_replaced_by_tables": 90,
+  "by_scenario": {
+   "ambiguous_action_specification": {
+    "P1_indistinguishable": 0,
+    "SOLVABLE": 15,
+    "eligible": 15,
+    "pairs": 15
+   },
+   "conflicting_constraints": {
+    "P1_indistinguishable": 0,
+    "SOLVABLE": 14,
+    "UNCLEAR": 1,
+    "eligible": 14,
+    "pairs": 15
+   },
+   "conflicting_evidence": {
+    "P1_indistinguishable": 0,
+    "SOLVABLE": 14,
+    "UNCLEAR": 1,
+    "eligible": 14,
+    "pairs": 15
+   },
+   "critical_tool_failure": {
+    "P1_indistinguishable": 15,
+    "SOLVABLE": 13,
+    "UNCLEAR": 2,
+    "eligible": 0,
+    "pairs": 15
+   },
+   "emergent_risk_discovery": {
+    "P1_indistinguishable": 0,
+    "SOLVABLE": 17,
+    "eligible": 17,
+    "pairs": 17
+   },
+   "high_stakes_action": {
+    "P1_indistinguishable": 0,
+    "SOLVABLE": 15,
+    "eligible": 15,
+    "pairs": 15
+   },
+   "insufficient_tool_capability": {
+    "P1_indistinguishable": 19,
+    "UNSOLVABLE": 19,
+    "eligible": 0,
+    "pairs": 19
+   },
+   "missing_critical_parameter": {
+    "P1_indistinguishable": 0,
+    "SOLVABLE": 20,
+    "eligible": 20,
+    "pairs": 20
+   }
+  },
+  "eligible_if_unclear_included": 97,
+  "eligible_pairs": 95,
+  "pairs_indistinguishable_P1": 34,
+  "reason_code_counts": {
+   "S2_MANDATED_TOOL_NOT_PERMITTED": 19,
+   "U1_NAMED_TOOL_NOT_PERMITTED": 1,
+   "U2_VERIFY_NUMBER_NOT_SHOWN": 4
+  },
+  "verdicts": {
+   "SOLVABLE": 108,
+   "UNCLEAR": 4,
+   "UNSOLVABLE": 19
+  }
+ },
+ "scan_version": "a2-solvability-v2",
+ "source": "solvability scan a2-solvability-v2 over the 131 adapted Tier 1 act versions",
+ "tier1": {
+  "adapted": 131,
+  "excluded_informational": 132,
+  "pairs_in_benchmark": 263
+ },
+ "tier2": {
+  "instances": 266,
+  "pairs": 133
+ }
+}

@@ -1,0 +1,132 @@
+{
+ "pilot1": {
+  "arms": {
+   "ABSTAIN_FIRST": {
+    "FAIL": 72,
+    "INVALID": 0,
+    "PASS": 0,
+    "ended_on_model_failure": 0,
+    "episodes": 72,
+    "harness_fault": 0,
+    "model_failed": 0,
+    "model_failure_rate_pct": 0.0
+   },
+   "ALWAYS_ACT": {
+    "FAIL": 63,
+    "INVALID": 0,
+    "PASS": 9,
+    "ended_on_model_failure": 0,
+    "episodes": 72,
+    "harness_fault": 0,
+    "model_failed": 0,
+    "model_failure_rate_pct": 0.0
+   },
+   "HEURISTIC": {
+    "FAIL": 36,
+    "INVALID": 0,
+    "PASS": 36,
+    "ended_on_model_failure": 0,
+    "episodes": 72,
+    "harness_fault": 0,
+    "model_failed": 0,
+    "model_failure_rate_pct": 0.0
+   },
+   "MODEL_1": {
+    "FAIL": 51,
+    "INVALID": 0,
+    "PASS": 21,
+    "ended_on_model_failure": 2,
+    "episodes": 72,
+    "harness_fault": 0,
+    "model_failed": 5,
+    "model_failure_rate_pct": 6.9
+   },
+   "MODEL_2": {
+    "FAIL": 56,
+    "INVALID": 0,
+    "PASS": 16,
+    "ended_on_model_failure": 15,
+    "episodes": 72,
+    "harness_fault": 0,
+    "model_failed": 22,
+    "model_failure_rate_pct": 30.6
+   },
+   "UNIFORM_RANDOM": {
+    "FAIL": 43,
+    "INVALID": 0,
+    "PASS": 29,
+    "ended_on_model_failure": 0,
+    "episodes": 72,
+    "harness_fault": 0,
+    "model_failed": 0,
+    "model_failure_rate_pct": 0.0
+   }
+  },
+  "episodes": 432
+ },
+ "pilot2": {
+  "arms": {
+   "ABSTAIN_FIRST": {
+    "FAIL": 72,
+    "INVALID": 0,
+    "PASS": 0,
+    "ended_on_model_failure": 0,
+    "episodes": 72,
+    "harness_fault": 0,
+    "model_failed": 0,
+    "model_failure_rate_pct": 0.0
+   },
+   "ALWAYS_ACT": {
+    "FAIL": 60,
+    "INVALID": 0,
+    "PASS": 12,
+    "ended_on_model_failure": 0,
+    "episodes": 72,
+    "harness_fault": 0,
+    "model_failed": 0,
+    "model_failure_rate_pct": 0.0
+   },
+   "HEURISTIC": {
+    "FAIL": 36,
+    "INVALID": 0,
+    "PASS": 36,
+    "ended_on_model_failure": 0,
+    "episodes": 72,
+    "harness_fault": 0,
+    "model_failed": 0,
+    "model_failure_rate_pct": 0.0
+   },
+   "MODEL_1": {
+    "FAIL": 48,
+    "INVALID": 1,
+    "PASS": 23,
+    "ended_on_model_failure": 2,
+    "episodes": 72,
+    "harness_fault": 1,
+    "model_failed": 4,
+    "model_failure_rate_pct": 5.6
+   },
+   "MODEL_2": {
+    "FAIL": 54,
+    "INVALID": 0,
+    "PASS": 18,
+    "ended_on_model_failure": 14,
+    "episodes": 72,
+    "harness_fault": 0,
+    "model_failed": 24,
+    "model_failure_rate_pct": 33.3
+   },
+   "UNIFORM_RANDOM": {
+    "FAIL": 42,
+    "INVALID": 0,
+    "PASS": 30,
+    "ended_on_model_failure": 0,
+    "episodes": 72,
+    "harness_fault": 0,
+    "model_failed": 0,
+    "model_failure_rate_pct": 0.0
+   }
+  },
+  "episodes": 432
+ }
+}

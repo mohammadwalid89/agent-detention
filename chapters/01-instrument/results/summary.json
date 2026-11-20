@@ -1,0 +1,9 @@
+{
+ "failure_mechanisms": 64,
+ "development_mechanisms": 48,
+ "sealed_mechanisms": 16,
+ "tests_passed": 1147,
+ "tests_failed_environmental": 4,
+ "sealed_files": 5431,
+ "source": "build reports of the harness tree (status document and test logs); not re-run here"
+}

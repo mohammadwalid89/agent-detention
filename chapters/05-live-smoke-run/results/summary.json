@@ -1,0 +1,72 @@
+{
+ "first_run_audit_after_rebuild": {
+  "call_error_count": 1,
+  "calls": 60,
+  "detention": {
+   "max_model_calls": 60,
+   "model_calls_total": 60,
+   "route_error_count": 1,
+   "route_refusal_count": 0,
+   "rows_completed": 2,
+   "rows_failed": 1,
+   "rows_interrupted": 1,
+   "rows_planned": 4,
+   "rows_refused": null,
+   "selected_episodes": 1,
+   "status": "stopped_incomplete"
+  },
+  "detention_calls": 11,
+  "episodes_with_log": 20,
+  "leak_hits": 27,
+  "leak_hits_distinct_episodes": 1,
+  "leak_kinds": [
+   "provenance.scenario",
+   "provenance.task_id",
+   "variant_id V1"
+  ],
+  "m2_calls_checked": 60,
+  "m2_unattributed_calls": 0,
+  "m3_calls_checked": 11,
+  "m3_exercised": true,
+  "main_calls": 49,
+  "ok_m1": true,
+  "ok_m2": false,
+  "ok_m3": true,
+  "ok_no_errors": false,
+  "refusal_calls": 0,
+  "result_files": 20
+ },
+ "rerun_audit": {
+  "call_error_count": 0,
+  "calls": 41,
+  "detention": {
+   "max_model_calls": 60,
+   "model_calls_total": 41,
+   "route_error_count": 0,
+   "route_refusal_count": 0,
+   "rows_completed": 4,
+   "rows_failed": 0,
+   "rows_interrupted": 0,
+   "rows_planned": 4,
+   "rows_refused": 0,
+   "selected_episodes": 1,
+   "status": "completed"
+  },
+  "detention_calls": 19,
+  "episodes_with_log": 10,
+  "leak_hits": 0,
+  "leak_hits_distinct_episodes": 0,
+  "leak_kinds": [],
+  "m2_calls_checked": 41,
+  "m2_unattributed_calls": 0,
+  "m3_calls_checked": 19,
+  "m3_exercised": true,
+  "main_calls": 22,
+  "ok_m1": true,
+  "ok_m2": true,
+  "ok_m3": true,
+  "ok_no_errors": true,
+  "refusal_calls": 0,
+  "result_files": 10
+ }
+}

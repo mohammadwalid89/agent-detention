@@ -1,0 +1,6 @@
+pyyaml==6.0.1
+pytest==9.1.1
+# needed to import tau2-bench's domain models when building Tier 2
+pydantic==2.13.5
+# needed by the harness tree (VERA), which is supplied separately through AD_TREE
+numpy==2.5.3

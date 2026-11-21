@@ -70,7 +70,7 @@ UNSOLVABLE_CODES = ("S1_REQUIRED_STATE_UNREACHABLE", "S2_MANDATED_TOOL_NOT_PERMI
 UNCLEAR_CODES = ("U1_NAMED_TOOL_NOT_PERMITTED", "U2_VERIFY_NUMBER_NOT_SHOWN")
 
 
-# ----------------------------------------------------------------------------------------------- inputs
+# inputs
 
 def sha256_file(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
@@ -108,7 +108,7 @@ def load_act_task(record: dict, data: Path = DATA) -> tuple[dict, bool]:
     return yaml.safe_load(path.read_text()), (want is not None and want == sha256_file(path))
 
 
-# ----------------------------------------------------------------------------------------------- checks
+# checks
 
 def _leaves(obj):
     if isinstance(obj, dict):
@@ -254,7 +254,7 @@ def pair_indistinguishable(record: dict) -> dict:
             "hidden_fields_that_differ": sorted(k for k in v1 if k not in OBS_FIELDS and v1[k] != v2.get(k))}
 
 
-# ----------------------------------------------------------------------------------------------- driver
+# driver
 
 def scan(set_path: Path = SET, data: Path = DATA) -> dict:
     records = json.load(open(set_path))["mechanisms"]

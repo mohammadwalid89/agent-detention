@@ -1,8 +1,8 @@
 """Offline control gate: scripted policies run through the harness on adapted pairs, no model call.
 
-    AD_TREE=<patched harness tree> AGENTABSTAIN_DATA=<snapshot> AGENTABSTAIN_REPO=<clone> \\
+    AGENTABSTAIN_DATA=<snapshot> AGENTABSTAIN_REPO=<clone> \\
         AD_WORK=work python chapters/04-offline-control-gate/compat_test.py --refs eligible20 --out gate.md --json gate.json
-    AD_TREE=<patched harness tree> python chapters/04-offline-control-gate/compat_test.py --synthetic --out synthetic.md
+    python chapters/04-offline-control-gate/compat_test.py --synthetic --out synthetic.md
 
 ``--synthetic`` builds the fixture of ``agent_detention/suite/tier1/synthetic.py`` in a temp dir. Its output is
 marked SYNTHETIC and is never written to a file named COMPAT_TEST.md.
@@ -145,7 +145,7 @@ def main() -> int:
     ap.add_argument("--refs", default="sample20", choices=("sample20", "eligible20", "all"))
     ap.add_argument("--synthetic", action="store_true")
     ap.add_argument("--seeds", type=int, default=20)
-    ap.add_argument("--tree", default="", help="patched COPY of the harness tree (sets AD_TREE)")
+    ap.add_argument("--tree", default="", help="harness tree to use instead of harness/ (sets AD_TREE)")
     ap.add_argument("--out", required=True)
     ap.add_argument("--json", default="")
     args = ap.parse_args()

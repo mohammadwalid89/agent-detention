@@ -225,9 +225,7 @@ def require_valid_grant(store: GrantStore, grant_id: str, action_class: str, res
     return chk.grant
 
 
-# --------------------------------------------------------------------------------------
 # Metrics (owner direction D), conditioned per dissent D6/O-2
-# --------------------------------------------------------------------------------------
 
 
 def escalation_metrics(rows: Iterable[dict]) -> dict:

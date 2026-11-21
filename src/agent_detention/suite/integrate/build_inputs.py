@@ -1,7 +1,7 @@
 """Build the runner inputs for the suite: source file, v14 conditions manifest, case-text overlay.
 
-    AD_TREE=<harness tree> python -m agent_detention.suite.integrate.build_inputs            # write into $AD_TREE/manifests/suite/
-    AD_TREE=<harness tree> python -m agent_detention.suite.integrate.build_inputs --check    # fail if any file differs from a rebuild
+    python -m agent_detention.suite.integrate.build_inputs            # write into harness/manifests/suite/ (git-ignored)
+    python -m agent_detention.suite.integrate.build_inputs --check    # fail if any file differs from a rebuild
 
 Inputs: ``$AD_WORK/tier1/tier1_set.json`` (chapter 03, ``build_tier1_records.py``) and the Tier 2 records and
 overlay in ``$AD_WORK/tier2``.  Output (inside the harness tree):
@@ -80,12 +80,43 @@ def build_source(tier1: list[dict], tier2: list[dict]) -> dict:
     }
 
 
+# What the harness's resolve_source_set() returned in the run: development set 10 (no review marker present).
+# The development mechanism sets are not published, so their hashes are recorded here; the generated
+# manifests are byte-identical to the run's.
+DEV_SOURCE_SET = {
+    "source_set": "10",
+    "path": "manifests/reliability/dev-active-set-10.json",
+    "sha256": "f988101054f65522dcda9cce863dd8edc08a66e9a14a7032e834d4b94b2afb2f",
+    "review_05_passed": False,
+    "review_05_asserted": None,
+    "review_05_marker_valid": False,
+    "review_05_marker": "artifacts/checkpoints/JOB24/ASTRA_W1_REVIEW_05_PASS.json",
+    "owner_review_passed": False,
+    "owner_review_marker_valid": False,
+    "owner_review_marker": "artifacts/review/approvals/set12/SET12_OWNER_REVIEW_PASS.json",
+    "set10_sha256": "f988101054f65522dcda9cce863dd8edc08a66e9a14a7032e834d4b94b2afb2f",
+    "set11_sha256": "291491a51809c4f0a654363f7b6fb951e86727dd3e98f784d2e7c8f4da35fe30",
+    "set12_sha256": "4976acc5d8c0a19a32be455588f6280d25ded1ed8ab0e8091f8c4343f16c7517",
+}
+DEV_SOURCE_RULE = (
+    "set 12 only when an attributable owner-review marker is bound to the set-12 "
+    "hash and its combined projection re-verifies (48/48, 0 content failures); "
+    "otherwise set 11 only when an attributable W1 review-05 PASS artifact is bound "
+    "to the set-11 hash; otherwise set 10"
+)
+
+
 def source_identity(source_path: Path) -> dict:
     """The set-12-style source identity, bound to the suite file's bytes (same shape build_v14_conditions uses)."""
-    from vera.canonical import sha256_file
-    from vera.delegation.instrument import resolve_source_set
+    from vera.canonical import canonical_json, sha256_file, sha256_text
+    from vera.delegation.instrument import REVIEW03_CLOSURE
 
-    base = resolve_source_set()
+    base = {
+        **DEV_SOURCE_SET,
+        "rule": DEV_SOURCE_RULE,
+        "closure_map": REVIEW03_CLOSURE,
+        "closure_digest": sha256_text(canonical_json(REVIEW03_CLOSURE)),
+    }
     return {
         **base,
         "source_set": SOURCE_SET,

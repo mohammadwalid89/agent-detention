@@ -1,7 +1,7 @@
 """Where inputs and generated files live. Everything comes from environment variables.
 
 AD_WORK              directory for generated records, overlays and reports (default ./work)
-AD_TREE              the harness tree (the VERA code the runner executes); required by anything that runs episodes
+AD_TREE              the harness tree (the VERA code the runner executes); default: harness/ in this repository
 AGENTABSTAIN_DATA    clone of the AgentAbstain dataset (CC-BY-4.0)
 AGENTABSTAIN_REPO    clone of the AgentAbstain code (MIT), used for the pair index
 TAU2_ROOT            clone of tau2-bench (MIT)

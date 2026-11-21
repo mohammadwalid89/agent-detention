@@ -289,7 +289,13 @@ def insert_record(conn: sqlite3.Connection, table: str, record: Any, *, ts: str 
     return row_hash
 
 
+def _check_table(table: str) -> None:
+    if table not in RECORD_TABLES:
+        raise VeraError(f"unknown record table {table!r}")
+
+
 def load_rows(conn: sqlite3.Connection, table: str) -> list[dict]:
+    _check_table(table)
     return [
         json.loads(row["record_json"])
         for row in conn.execute(f"SELECT record_json FROM {table} ORDER BY seq")
@@ -297,6 +303,7 @@ def load_rows(conn: sqlite3.Connection, table: str) -> list[dict]:
 
 
 def verify_chain(conn: sqlite3.Connection, table: str) -> tuple[bool, int | None]:
+    _check_table(table)
     head = HashChain.GENESIS
     expected_seq = 1
     for row in conn.execute(

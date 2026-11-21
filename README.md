@@ -8,7 +8,7 @@
 
 | # | chapter | question | finding | status |
 |---|---|---|---|---|
-| 01 | [instrument](chapters/01-instrument) | Can agents be graded consistently enough to compare them? | Built and sealed: 64 failure mechanisms, 1,147 tests passed (4 environmental failures). Core code only | partial |
+| 01 | [instrument](chapters/01-instrument) | Can agents be graded consistently enough to compare them? | Built and sealed: 64 failure mechanisms, 1,147 tests passed (4 environmental failures). Code published; mechanism content not | partial |
 | 02 | [small-model-pilots](chapters/02-small-model-pilots) | Does the instrument run end to end on real models, and do the controls score where they must? | Two 432-episode pilots; models scored below a heuristic because of a prompt/validator mismatch | provisional |
 | 03 | [public-benchmark-suite](chapters/03-public-benchmark-suite) | Can public benchmarks become act-or-hold pairs the instrument can grade? | 264 pairs; 95 of 131 Tier 1 pairs usable after a solvability scan | built |
 | 04 | [offline-control-gate](chapters/04-offline-control-gate) | Does the grader score obvious policies correctly before any model is tested? | Always-act 100/0, always-hold 0/100, no-op 0/0, coin 48.3% | passed |
@@ -34,44 +34,58 @@ Every number traces to the `results/` folder of its chapter or to a build report
 ## Layout
 
 ```
+harness/                  the harness tree the runs executed (VERA): world, Detention protocol, grid runner, instrument core
 src/agent_detention/      the case suite (Tier 1 AgentAbstain, Tier 2 tau2-bench and CRM), audit, row generator
 chapters/NN-slug/         one folder per experiment: README, entry scripts, results/
-tests/                    suite tests (synthetic fixture; some need the datasets or the harness tree)
+tests/                    suite tests (synthetic fixture; some need the datasets) and offline route tests
 scripts/fetch_data.py     downloads the public datasets at the commits the results used
 ```
 
 ## The harness tree
 
-To run chapters 03 to 06, point `AD_TREE` at a copy of the harness tree, patched with the four-file change in `src/agent_detention/suite/harness_patch/`:
+`harness/` holds the part of the harness tree that chapters 01 and 03 to 06 use, about 32,000 lines, cleaned for publication. The suite finds it there; `AD_TREE` overrides the location. What was selected, what changed from the run version and what is left out (the instrument's own mechanism content, the run artefacts, the pilot runner) is in `harness/README.md`.
 
-```
-python -m agent_detention.suite.harness_patch.make_patched_copy SOURCE_TREE DEST_TREE
-```
+## Model access
 
-Chapter 01 publishes the self-contained core of that tree. See the chapter READMEs for what was and was not verified without it.
+The experiments called each model through a model adapter: one single-turn request per model turn, no tools. The adapter class the runs used is not published; in its place this repository provides `AnthropicApiAdapter` (`harness/vera/delegation/adapters.py`), which calls the Anthropic Messages API and reads the key from the `ANTHROPIC_API_KEY` environment variable and from nowhere else. The mock adapters run everything offline. The published numbers come from the runs; none was re-run with this adapter.
 
 ## How to run
 
-Chapters 03 to 06 run on the harness tree (the VERA code: world, Detention protocol, grid runner), which this repository does not contain; see "The harness tree" above. Without it, what runs here is: chapter 01 tests (59), `tests/suite` on the synthetic fixture, `scripts/fetch_data.py`.
-
-With the harness tree:
+From a fresh clone, with Python 3.12. No step calls a model, and nothing needs a network after the download.
 
 ```
 pip install -r requirements.txt
 pip install -e .
+python -m pytest -q chapters/01-instrument/tests       # 59 tests, no data needed
 python scripts/fetch_data.py --dest data
 export AGENTABSTAIN_DATA=data/agentabstain-data AGENTABSTAIN_REPO=data/agentabstain
-export TAU2_ROOT=data/tau2-bench CRM_BENCH_ROOT=data/crm-agent-bench
-export AD_WORK=work AD_TREE=<patched harness tree>
+export TAU2_ROOT=data/tau2-bench CRM_BENCH_ROOT=data/crm-agent-bench AD_WORK=work
+# chapter 03: build the cases
 python chapters/03-public-benchmark-suite/build_tier1_records.py --out work/tier1/tier1_set.json
+python -m agent_detention.suite.tier2.build_tier2
+python chapters/03-public-benchmark-suite/scan_solvability.py --out work/solvability.json --table work/solvability_table.md
+# chapter 04: the offline control gate
 python chapters/04-offline-control-gate/compat_test.py --refs eligible20 --out work/gate.md
+# chapter 05: the full pipeline as a dry run with mock adapters, then the leak audit
+python -m agent_detention.suite.integrate.build_inputs
+python -m agent_detention.suite.integrate.select_tier1_smoke
+python -m agent_detention.suite.integrate.rows --ids-file work/reports/tier1_smoke10/ids.json --slot O1 --repeats 1 --out work/reports/rows.json
+python -m agent_detention.suite.integrate.run_suite --assignment work/reports/rows.json --out work/rundry --dry-run --detention
+python -m agent_detention.suite.integrate.audit_run work/rundry --json work/audit.json
+# chapter 06: the Stage 0 rows, and scoring (here on the dry run)
+python chapters/06-stage0-side-by-side/build_rows.py --sample chapters/06-stage0-side-by-side/results/stage0_sample.json --out-dir work/stage0
+python chapters/06-stage0-side-by-side/score.py --run B1=work/rundry --rows B1=work/reports/rows.json --out work/scores.json
+# tests, once the files above exist
+python -m pytest -q tests chapters/03-public-benchmark-suite/test_scan_solvability.py
 ```
 
-No step calls a model or needs a network after the download.
+The chapter READMEs give each step's options and what it reproduces. The Stage 0 row files rebuild byte-identical to the ones the run used. A live run needs `ANTHROPIC_API_KEY`, a runner config, a signed pilot gate and a probed preflight report; the gates and configs of the published runs are not in this repository (see `harness/README.md`).
 
 ## Licence and dataset credits
 
-Code: MIT, Copyright (c) 2026 Mohammad Walid.
+Code: MIT, Copyright (c) 2026 Mohammad Walid. This includes `harness/`, which was written for this project and vendors no third-party code.
+
+The licences below were read from the licence files in the local clones the results used; they have not yet been checked against the live pages. `LICENSES/DATA_LICENSES.md` gives the commits and the pages to check.
 
 | dataset | licence | use |
 |---|---|---|

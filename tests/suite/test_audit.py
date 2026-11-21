@@ -5,12 +5,12 @@ that it catches the leaks it claims to, and that M3 is never vacuously true."""
 from __future__ import annotations
 
 import json
-import os
-from pathlib import Path
 
 import pytest
 
-TREE = Path(os.environ.get("AD_TREE", "."))
+from agent_detention.suite.tier1 import harness
+
+TREE = harness.tree_path()
 pytestmark = pytest.mark.skipif(not (TREE / "manifests/suite/SUITE_SOURCE_V14B.json").is_file(), reason="suite inputs not built")
 
 

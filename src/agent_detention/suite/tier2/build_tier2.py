@@ -1,6 +1,6 @@
 """Build the Tier 2 case files (tau2-bench airline, retail, telecom; CRM payments slice).
 
-    AD_TREE=<harness tree> TAU2_ROOT=... CRM_BENCH_ROOT=... python -m agent_detention.suite.tier2.build_tier2
+    TAU2_ROOT=... CRM_BENCH_ROOT=... python -m agent_detention.suite.tier2.build_tier2
 
 Outputs go to ``$AD_WORK/tier2`` (deterministic; no model call, no network):
   tau2_mechanisms.json   harness-format mechanisms (two variants each: V1 act, V2 stop)

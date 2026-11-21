@@ -23,11 +23,11 @@
 ```
 python scripts/fetch_data.py --dest data
 export AGENTABSTAIN_DATA=data/agentabstain-data AGENTABSTAIN_REPO=data/agentabstain
-export TAU2_ROOT=data/tau2-bench CRM_BENCH_ROOT=data/crm-agent-bench AD_WORK=work AD_TREE=<patched harness tree>
+export TAU2_ROOT=data/tau2-bench CRM_BENCH_ROOT=data/crm-agent-bench AD_WORK=work
 python chapters/03-public-benchmark-suite/build_tier1_records.py --out work/tier1/tier1_set.json
 python -m agent_detention.suite.tier2.build_tier2
-python chapters/03-public-benchmark-suite/scan_solvability.py --out work/solvability.json
+python chapters/03-public-benchmark-suite/scan_solvability.py --out work/solvability.json --table work/solvability_table.md
 ```
-The harness tree is made from its source tree with `python -m agent_detention.suite.harness_patch.make_patched_copy SRC DEST`.
+The suite runs on the harness tree in `harness/` (see `harness/README.md`).
 
-**Status.** Done (code cleaned from the run version: paths and dataset locations now come from environment variables; the smoke-run corroboration block of the scan, which read run transcripts, and the manifest writers were removed). Verified here against local clones of the datasets, read-only, no network and no model call: `build_tier1_records.py` adapted 131 of 263 pairs with 132 excluded, record set hash prefix `ec42f8a6` as in the run; `scan_solvability.py` gave 108 solvable, 19 unsolvable, 4 unclear, 34 indistinguishable pairs and 95 usable; its 10 known-answer tests pass. `build_tier2` produced 133 pairs from the local tau2-bench and CRM clones and the 400 Tier 2 tests pass; the 25 tests under `tests/suite` pass against the patched harness tree. `py_compile` and `ruff check` clean. The harness tree these ran against is the unpublished one (see the root README).
+**Status.** Done (code cleaned from the run version: paths and dataset locations now come from environment variables; the smoke-run corroboration block of the scan, which read run transcripts, and the manifest writers were removed). Verified here against local clones of the datasets, read-only, no network and no model call: `build_tier1_records.py` adapted 131 of 263 pairs with 132 excluded, record set hash prefix `ec42f8a6` as in the run; `scan_solvability.py` gave 108 solvable, 19 unsolvable, 4 unclear, 34 indistinguishable pairs and 95 usable; its 10 known-answer tests pass. `build_tier2` produced 133 pairs from the local tau2-bench and CRM clones and the 400 Tier 2 tests pass; the 25 tests under `tests/suite` pass. `py_compile` and `ruff check` clean. Re-run on 2026-11-20 from a fresh copy of this repository against its own `harness/`: same results.

@@ -1,6 +1,6 @@
 """Stage 0 scorer (prereg §5, §6): strict (primary, tier1/check.py) and lenient (runner valid_disposition) beside it.
 
-    AD_TREE=<patched harness tree> AD_WORK=work python chapters/06-stage0-side-by-side/score.py \\
+    AD_WORK=work python chapters/06-stage0-side-by-side/score.py \\
         --run B1=RUN_DIR [--run B2=RUN_DIR] --rows B1=rows_B1.json [--rows B2=...] --out scores.json
 
 Read-only on the run directories.  Per episode: strict/lenient pass, forbidden attempts, ATTEMPT_THEN_STOP, over-abstention,

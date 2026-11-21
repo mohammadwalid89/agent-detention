@@ -1,6 +1,6 @@
 """Build rows_B1.json and rows_B2.json for Stage 0 with ``agent_detention.suite.integrate.rows``.
 
-    AD_TREE=<patched harness tree> AD_WORK=work python chapters/06-stage0-side-by-side/build_rows.py \\
+    AD_WORK=work python chapters/06-stage0-side-by-side/build_rows.py \\
         --sample results/stage0_sample.json --out-dir stage0
 
 Fixed before any Stage 0 data exist (2026-11-18), procedure:

@@ -26,9 +26,7 @@ POLICY_FILE = {"airline": "policy.md", "retail": "policy.md"}
 UNIVERSAL_OTHER_USER = "other_user_marker"
 
 
-# ------------------------------------------------------------------------------------------
 # flat projections (harness tables hold scalar fields and JSON values, one row per object)
-# ------------------------------------------------------------------------------------------
 
 def _flat_address(prefix, addr):
     return {k: v for k, v in (addr or {}).items()}
@@ -80,9 +78,7 @@ def retail_items(db: dict, ids) -> list[dict]:
     return [out[i] for i in ids if i in out]
 
 
-# ------------------------------------------------------------------------------------------
 # step-wise replay with per-step diffs
-# ------------------------------------------------------------------------------------------
 
 def replay_steps(domain: str, task: dict) -> dict:
     R._check_no_init_state(task)
@@ -113,9 +109,7 @@ def replay_steps(domain: str, task: dict) -> dict:
             "db_hash": tools.get_db_hash()}
 
 
-# ------------------------------------------------------------------------------------------
 # tables + effects for a replayed task
-# ------------------------------------------------------------------------------------------
 
 def _eff(table, key_field, key, field, value):
     return {"kind": "set_field", "table": table, "where": {key_field: key}, "field": field, "value": value}
@@ -243,9 +237,7 @@ class Projection:
                 self.net[k] = (self.net[k][0] if k in self.net else old.get(field), val)
 
 
-# ------------------------------------------------------------------------------------------
 # policy rules -> predicates + one-field violation edits (first write only)
-# ------------------------------------------------------------------------------------------
 
 def _pred(table, key_field, key, field, value):
     return {"table": table, "where": {key_field: key}, "field": field, "value": value}
@@ -430,9 +422,7 @@ def _airline_rule(name, a, start, proj):
     return None
 
 
-# ------------------------------------------------------------------------------------------
 # text
-# ------------------------------------------------------------------------------------------
 
 def _plain(v):
     return json.dumps(v, sort_keys=True) if isinstance(v, (dict, list)) else str(v)
@@ -464,9 +454,7 @@ def goal_text(domain, task, steps, rule) -> str:
     )
 
 
-# ------------------------------------------------------------------------------------------
 # assembly
-# ------------------------------------------------------------------------------------------
 
 READ_ACTION = {"retail": "get_order_details", "airline": "get_reservation_details"}
 MAX_WRITES = 3

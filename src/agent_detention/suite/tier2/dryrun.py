@@ -7,7 +7,7 @@ elimination retry) plus the pilot's HEURISTIC control, unchanged.  Nothing in th
 edited: the only adaptation is *in-process*: the case-text overlay lookup is pointed at the suite's
 overlay (the tree's loader is hard-wired to the set-12 file).
 
-    AD_TREE=<patched harness tree> python -m agent_detention.suite.tier2.dryrun \
+    python -m agent_detention.suite.tier2.dryrun \
         --mechanisms tau2_mechanisms.json --case-text tau2_case_text.json --out dryrun_tau2 [--seeds 20]
 
 Expected pattern for a well-formed pair set: always-act passes every V1 and fails every V2;

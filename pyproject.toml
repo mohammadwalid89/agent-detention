@@ -14,7 +14,7 @@ dependencies = ["pyyaml==6.0.1"]
 where = ["src"]
 
 [tool.setuptools.package-data]
-agent_detention = ["suite/harness_patch/*.patch", "suite/*/ATTRIBUTION.md"]
+agent_detention = ["suite/*/ATTRIBUTION.md"]
 
 [tool.ruff]
 line-length = 120

@@ -75,9 +75,7 @@ class Record:
             raise ContractError(f"{type(self).__name__}.{name}={value!r} not in {allowed}")
 
 
-# --------------------------------------------------------------------------------------
 # Principals, delegation, authority
-# --------------------------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
@@ -141,9 +139,7 @@ class ApprovalDecision(Record):
             raise ContractError("self-approval is structurally forbidden (proposer == approver)")
 
 
-# --------------------------------------------------------------------------------------
 # Task / run / execution
-# --------------------------------------------------------------------------------------
 
 
 @dataclass(frozen=True)
@@ -351,9 +347,7 @@ class OperationalVerdict(Record):
         )
 
 
-# --------------------------------------------------------------------------------------
 # RCA / audit / policy / WSP
-# --------------------------------------------------------------------------------------
 
 
 @dataclass(frozen=True)

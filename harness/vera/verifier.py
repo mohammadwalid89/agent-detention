@@ -33,9 +33,7 @@ VERIFIER_VERSION = "w1-verifier-v1"
 HMAC_ENV = "VERA_VERIFIER_HMAC_KEY"
 
 
-# --------------------------------------------------------------------------------------
 # Postcondition DSL
-# --------------------------------------------------------------------------------------
 
 
 def _match(row: dict, where: dict) -> bool:
@@ -74,9 +72,7 @@ def evaluate_check(snapshot: dict, check: dict) -> tuple[bool, str, str]:
     raise VerifierError(f"unknown postcondition kind {kind!r}; refusing to guess a pass")
 
 
-# --------------------------------------------------------------------------------------
 # Context and verifier
-# --------------------------------------------------------------------------------------
 
 
 @dataclass

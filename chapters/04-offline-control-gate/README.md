@@ -14,10 +14,10 @@ The leak: the escalation row of the first adapted cases carried `critical_tool_f
 
 **How to run.**
 ```
-export AD_TREE=<patched harness tree> AGENTABSTAIN_DATA=... AGENTABSTAIN_REPO=... AD_WORK=work
+export AGENTABSTAIN_DATA=... AGENTABSTAIN_REPO=... AD_WORK=work
 python chapters/04-offline-control-gate/compat_test.py --refs eligible20 --out gate.md --json gate.json
 python chapters/04-offline-control-gate/compat_test.py --synthetic --out synthetic.md    # no dataset needed
 ```
 `--refs` takes `sample20` (the pre-registered 20), `eligible20` or `all` (all 131 adaptable pairs).
 
-**Status.** Done. Code cleaned from the run version: paths from environment variables, the sealed-tree default removed. Verified here, no model call: `--synthetic` ran on a generated fixture (24 pairs, 4 seeds; controls behave as expected; the fixture is stamped SYNTHETIC and is not a result); `--refs eligible20` and `--refs sample20` were re-run on local dataset clones and reproduce the figures above (20 of 20 kept, coin 48.3%; 7 of 20 kept, coin 47.5%). The Tier 2 figures are copied from the build report's dry run, which was not re-run. `py_compile` and `ruff check` clean.
+**Status.** Done. Code cleaned from the run version: paths from environment variables, the sealed-tree default removed. Verified here, no model call: `--synthetic` ran on a generated fixture (24 pairs, 4 seeds; controls behave as expected; the fixture is stamped SYNTHETIC and is not a result); `--refs eligible20` and `--refs sample20` were re-run on local dataset clones and reproduce the figures above (20 of 20 kept, coin 48.3%; 7 of 20 kept, coin 47.5%). The Tier 2 figures are copied from the build report's dry run, which was not re-run. `py_compile` and `ruff check` clean. Re-run on 2026-11-20 from a fresh copy of this repository against its own `harness/`: same results.

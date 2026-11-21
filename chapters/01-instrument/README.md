@@ -8,7 +8,7 @@
 
 **What it means.** The grading machinery exists and passes its own tests. That is not evidence that agents are graded consistently: the cases are the first, hand-built set, and the later chapters replace them with public benchmark cases.
 
-**What is in this folder.** The self-contained core of the instrument, as `vera/`:
+**Where the code is.** The instrument is the harness tree in `harness/` at the repository root. This folder holds the tests of its self-contained core, in `harness/vera/`:
 
 | module | role |
 |---|---|
@@ -20,7 +20,7 @@
 | `holdout.py` | sealing of a holdout set and the ordering rule that blocks later stages until one exists |
 | `sandbox/` | a small in-process ticket service with injectable faults, and state snapshots |
 
-Not published here: the delegation world, the Detention protocol, the grid runner, the pilot routes and about 58,000 further lines of the harness tree, and the mechanism content (the development mechanisms and, by design, the sealed ones). Chapters 03 to 06 import that tree through `AD_TREE`; see the root README.
+The rest of `harness/` (the delegation world, the Detention protocol, the grid runner) is what chapters 03 to 06 run on. Not published: the mechanism content (the 48 development mechanisms and, by design, the 16 sealed ones), the pilot runner, and the tree's full test suite, which needs that content (see `harness/README.md`).
 
 **How to run.**
 ```
@@ -28,4 +28,4 @@ cd chapters/01-instrument
 python -m pytest -q tests
 ```
 
-**Status.** Partial: only the core is published. Code is the run version with unused imports and one unused variable removed and the test fixture's person name replaced. Verified here: `py_compile` and `ruff check` clean; the 59 core tests pass (`pytest`, Python 3.12). The 1,147-test figure comes from the run on the full tree, which was not re-run here.
+**Status.** Partial: the instrument's code is published, but not its cases or its full test suite, so the 1,147-test result cannot be reproduced from this repository. Code is the run version with unused imports and one unused variable removed and the test fixture's person name replaced. Verified here: `py_compile` and `ruff check` clean; the 59 core tests pass on a fresh copy (`pytest`, Python 3.12). The 1,147-test figure comes from the run on the full tree, which was not re-run here.

@@ -21,9 +21,9 @@ Projection (decision level, the same level as AgentAbstain's own commit check):
 
 The two variants share one state graph (identical edges), so the available actions never reveal which
 variant is which.  What differs per variant is the entry tables, the goal text and the forbidden list;
-the unmodified tree reads those from the mechanism, so they travel as three **opt-in variant fields**
-(``entry_tables``, ``goal_text``, ``forbidden_actions``) that a 12-line patch to
-``_instance_from_record`` honours (``suite/harness_patch/``).  Without the patch the records still load,
+the sealed tree read those from the mechanism, so they travel as three **opt-in variant fields**
+(``entry_tables``, ``goal_text``, ``forbidden_actions``) that a 12-line change to
+``_instance_from_record`` honours (``harness/vera/pilot/instances.py``).  Without it the records still load,
 but both variants would see variant A's tables and neither would carry a goal text.
 
 Things this projection cannot carry (reported in the manifest, not hidden):

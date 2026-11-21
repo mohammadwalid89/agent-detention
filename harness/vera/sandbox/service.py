@@ -170,6 +170,10 @@ class SandboxService:
         if self._flag("permission_change"):
             raise PermissionDenied("ticket update denied by policy trigger")
         before = self.conn.execute("SELECT * FROM ticket WHERE ticket_id=?", (ticket_id,)).fetchone()
+        columns = {row[1] for row in self.conn.execute("PRAGMA table_info(ticket)")}
+        unknown = set(fields) - columns
+        if unknown:
+            raise VeraError(f"unknown ticket field(s): {sorted(unknown)}")
         sets = ", ".join(f"{k}=?" for k in fields)
         values = [str(v) for v in fields.values()] + [ts, ticket_id]
         cur = self.conn.execute(f"UPDATE ticket SET {sets}, updated_at=? WHERE ticket_id=?", values)

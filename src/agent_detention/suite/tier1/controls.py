@@ -28,8 +28,8 @@ VERIFIER_KEY = b"suite-verifier"
 def _imports():
     harness.use_tree()
     if not harness.is_patched():
-        raise RuntimeError("the harness tree is not patched with suite/harness_patch (per-variant overrides); "
-                           "set AD_TREE to a patched COPY. Refusing: unpatched, both variants would see A's tables.")
+        raise RuntimeError("the harness tree lacks the per-variant overrides in vera/pilot/instances.py; "
+                           "use harness/ from this repository. Refusing: without them both variants would see A's tables.")
     from tools.delegation import floors  # noqa: PLC0415
     from vera.delegation.constants import COND_ABSTENTION, COND_OPTIONAL  # noqa: PLC0415
     from vera.delegation.plan import build_cell  # noqa: PLC0415

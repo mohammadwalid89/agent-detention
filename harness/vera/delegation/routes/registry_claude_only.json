@@ -1,0 +1,48 @@
+{
+  "created_at_utc": "2026-11-17T00:00:00Z",
+  "decision": "Claude-only registry profile for the Detention pilot (vendor: Anthropic). Two routes: Sonnet 5.5 and Haiku 5.5. No route asymmetry and no label question: it is not the main grid.",
+  "excluded_models": [
+    "gpt-6-astra"
+  ],
+  "job_id": "M11-claude-only",
+  "kind": "vera.route_registry.v1",
+  "note": "Pilot profile; never used for the main grid. Both routes call the Anthropic Messages API; the key is read from the environment variable named in api_key_env.",
+  "pilot_profile": "claude_only",
+  "routes": [
+    {
+      "adapter": "AnthropicApiAdapter",
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "deployment_note": "Single-turn Messages API call with the harness's own system prompt; no tools.",
+      "display_name": "claude-sonnet-5-5",
+      "identity_roles": [
+        "ORCHESTRATOR_O2",
+        "OTHER_FRONTIER_PEER_FOR_O1"
+      ],
+      "identity_slot": "O2",
+      "model_id": "claude-sonnet-5-5",
+      "network": "model_endpoint_only",
+      "publisher": "Anthropic",
+      "route": "anthropic_api",
+      "route_id": "o2_claude_sonnet_5_5",
+      "subject_orchestrator": "O2",
+      "tools": "disabled"
+    },
+    {
+      "adapter": "AnthropicApiAdapter",
+      "api_key_env": "ANTHROPIC_API_KEY",
+      "deployment_note": "Own-publisher sibling of O2; single-turn Messages API call; no tools.",
+      "display_name": "haiku-5-5",
+      "identity_roles": [
+        "OWN_PUBLISHER_SIBLING_O2"
+      ],
+      "identity_slot": "SIBLING_O2",
+      "model_id": "claude-haiku-5-5",
+      "network": "model_endpoint_only",
+      "publisher": "Anthropic",
+      "route": "anthropic_api",
+      "route_id": "anthropic_claude_haiku_5_5",
+      "subject_orchestrator": "",
+      "tools": "disabled"
+    }
+  ]
+}

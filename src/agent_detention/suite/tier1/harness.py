@@ -1,7 +1,8 @@
-"""Bridge to the harness tree (VERA), which is imported, never copied.
+"""Bridge to the harness tree (VERA), which the suite imports but does not modify.
 
-``AD_TREE`` must point at the harness tree with ``suite/harness_patch/harness_v14b.patch`` applied
-(see ``harness_patch/make_patched_copy.py``). The scripted controls refuse to run on an unpatched tree.
+The tree is ``harness/`` at the root of this repository. ``AD_TREE`` overrides it, for example to run
+against a copy. The scripted controls refuse a tree without the per-variant overrides in
+``vera/pilot/instances.py`` (see ``harness/README.md``).
 """
 
 from __future__ import annotations
@@ -10,12 +11,16 @@ import os
 import sys
 from pathlib import Path
 
+REPO_HARNESS = Path(__file__).resolve().parents[4] / "harness"
+
 
 def tree_path() -> Path:
     value = os.environ.get("AD_TREE")
-    if not value:
-        raise SystemExit("set AD_TREE to the patched harness tree")
-    return Path(value)
+    if value:
+        return Path(value)
+    if (REPO_HARNESS / "vera" / "__init__.py").is_file():
+        return REPO_HARNESS
+    raise SystemExit("harness/ not found next to src/; set AD_TREE to the harness tree")
 
 
 def use_tree() -> Path:

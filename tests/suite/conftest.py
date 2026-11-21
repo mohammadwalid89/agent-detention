@@ -1,4 +1,3 @@
-import os
 import tempfile
 from pathlib import Path
 
@@ -7,14 +6,12 @@ import pytest
 
 @pytest.fixture(scope="session")
 def patched_tree():
-    """The harness tree with harness_patch/harness_v14b.patch applied, from $AD_TREE."""
-    if not os.environ.get("AD_TREE"):
-        pytest.skip("AD_TREE not set")
+    """The harness tree with the per-variant overrides: harness/ in this repository, or $AD_TREE."""
     from agent_detention.suite.tier1 import harness
 
-    harness.use_tree()
+    tree = harness.use_tree()
     assert harness.is_patched()
-    return Path(os.environ["AD_TREE"])
+    return tree
 
 
 @pytest.fixture(scope="session")

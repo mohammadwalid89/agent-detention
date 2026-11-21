@@ -6,7 +6,8 @@ from pathlib import Path
 
 import pytest
 
-ROOT = Path(__file__).resolve().parent.parent
+# the instrument's core lives in the harness tree at the repository root
+ROOT = Path(__file__).resolve().parents[3] / "harness"
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 

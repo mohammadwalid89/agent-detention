@@ -1,6 +1,6 @@
 """Tier 2 checks: run after ``build_tier2.py``. No model call, no network.
 
-    AD_TREE=<patched harness tree> AD_WORK=work TAU2_ROOT=... CRM_BENCH_ROOT=... python -m pytest tests/tier2 -q
+    AD_WORK=work TAU2_ROOT=... CRM_BENCH_ROOT=... python -m pytest tests/tier2 -q
 """
 import copy
 import json
@@ -11,8 +11,8 @@ import pytest
 from agent_detention import paths
 
 OUT = paths.tier2_out()
-if not (os.environ.get("AD_TREE") and (OUT / "tau2_mechanisms.json").is_file()):
-    pytest.skip("needs AD_TREE and the built Tier 2 files", allow_module_level=True)
+if not (os.environ.get("TAU2_ROOT") and (OUT / "tau2_mechanisms.json").is_file()):
+    pytest.skip("needs TAU2_ROOT and the built Tier 2 files (build_tier2)", allow_module_level=True)
 
 from agent_detention.suite.tier2 import record_builder as B  # noqa: E402
 from agent_detention.suite.tier2 import tau2_adapter as A  # noqa: E402

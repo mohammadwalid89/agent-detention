@@ -57,7 +57,7 @@ POSITION_DRAW_DENOMINATOR = len(FOUR_SLOT_PERMUTATIONS)
 
 
 def read_route_registry(path: str | Path | None = None) -> dict:
-    """Read the JOB25 registry as data.  Read-only by construction."""
+    """Read the route registry as data.  Read-only by construction."""
     path = Path(path) if path is not None else REGISTRY_PATH
     data = json.loads(path.read_text(encoding="utf-8"))
     data["_registry_path"] = str(path)
@@ -83,7 +83,7 @@ def registry_slots_for(orchestrator: str, registry: dict | None = None) -> dict:
         },
     }
     if registry.get("pilot_profile") == "claude_only":
-        # M11: the Claude-only pilot profile.  Slot names are kept (O1/O2) so every table that
+        # The Claude-only pilot profile.  Slot names are kept (O1/O2) so every table that
         # keys on them still works; under this profile O1 = Sonnet 5.5 and O2 = Haiku 5.5, and
         # every other slot is the other Claude route (solo runs never show peers).
         sonnet, haiku = "o2_claude_sonnet_5_5", "anthropic_claude_haiku_5_5"

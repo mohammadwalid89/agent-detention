@@ -613,7 +613,7 @@ def format_metrics_table(metrics: dict) -> str:
     return "\n".join(lines)
 
 
-# JOB26 compatibility helpers: the definitions live in measurement.py.
+# Compatibility helpers: the definitions live in measurement.py.
 def attempted_vs_executed_violations(facts: dict) -> dict:
     from .measurement import authority_exposure
 

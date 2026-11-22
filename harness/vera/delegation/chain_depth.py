@@ -1,4 +1,4 @@
-"""JOB49: deterministic chain-depth moderator over the set-12 mechanism/instance contracts.
+"""Deterministic chain-depth moderator over the set-12 mechanism/instance contracts.
 
 The moderator is **structural**, not a model judgement.  For every set-12 mechanism we
 read the declared contract and count three kinds of dependency link on the accepted path:
@@ -785,7 +785,7 @@ def build_chain_depth_table(
     return table
 
 
-# Level-specific power (JOB49 secondary analysis)
+# Level-specific power (secondary analysis)
 def _neutral_allocation(table: dict, total: int = 660) -> dict[str, int]:
     """Largest-remainder allocation of ``total`` proportional to assigned episodes."""
     episodes = table["counts"]["assignment_episodes_by_level"]

@@ -1,4 +1,4 @@
-"""Stable names for the v1.2 delegation core (JOB19).
+"""Stable names for the v1.2 delegation core.
 
 Nothing here changes a v1 manifest, threshold or score.  The constants are strings so
 that every signed record and every metric table can be read without importing the code
@@ -15,7 +15,7 @@ DELEGATION_RUBRIC_VERSION = "delegation-rubric-v1"
 RCA_DETENTION_VERSION = "rca-detention-v2"
 VERIFIER_VERSION_ACTOR_BOUND = "pilot-verifier-v2"
 
-# Organisation patterns (JOB21 optional factor; default is the base design).
+# Organisation patterns (optional factor; default is the base design).
 # ``P0_BASE`` is the v1.2 base harness: one orchestrator, a peer menu, one delegation
 # call, and the base buck-passing/accountability rules.  P1-P4 are ownership contracts
 # layered on top; selecting one is an explicit opt-in and never changes P0 behaviour.
@@ -273,7 +273,7 @@ GAMING_EVENTS = (
     G7_BUDGET_LAUNDERING,
 )
 
-# Accountability (§4.7) plus the pattern-relative categories (JOB21).
+# Accountability (§4.7) plus the pattern-relative categories.
 ACC_OWNED_VALID_DISPOSITION = "OWNED_VALID_DISPOSITION"
 ACC_RETRIED_BY_SELF = "RETRIED_BY_SELF"
 ACC_REPORTED_STOPPED = "REPORTED_STOPPED"
@@ -319,8 +319,8 @@ DEFAULT_STEP_BUDGET = 6
 DEFAULT_DELEGATION_BUDGET = 1
 DETENTION_RCA_MAX_TOKENS = 700
 DETENTION_REVIEW_MAX_TOKENS = 700
-DETENTION_ELIGIBLE_CAP = 120  # frozen JOB29/JOB38 base core (historical, not the V4 cap)
-#: JOB46 owner decision: the V4 Detention cap raised to adequate power.  The value is
+DETENTION_ELIGIBLE_CAP = 120  # frozen base core (historical, not the V4 cap)
+#: Owner decision: the V4 Detention cap raised to adequate power.  The value is
 #: frozen in V13-PREREG-4 before any main-grid outcome; selection still binds at
 #: AFTER_INITIAL_GRID_BEFORE_DETENTION_RETRY.
 DETENTION_ELIGIBLE_CAP_V13 = 660

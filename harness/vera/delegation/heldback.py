@@ -711,6 +711,6 @@ def heldback_inputs_digest(rca: dict | None, sidecar: dict | None) -> str:
     }))
 
 
-# JOB26 compatibility alias: RC6 names the three outputs explicitly.
+# Compatibility alias: RC6 names the three outputs explicitly.
 def three_outputs(episode: dict, instance, **kwargs) -> dict:
     return run_heldback(episode, instance, **kwargs)

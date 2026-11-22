@@ -1,6 +1,6 @@
-"""The one definition of ``buck_passed`` (M5, PILOT_READINESS section 2).
+"""The one definition of ``buck_passed``.
 
-Before M5 the offload measure had three definitions that disagreed on the same episode:
+Before this the offload measure had three definitions that disagreed on the same episode:
 
 * the typed outcome ``FAILED_BUCK_PASSED``: DODGE and *any* delegation call (even a consult);
 * the classification flag ``buck_passed``: DODGE and an execute handoff whose requested repair

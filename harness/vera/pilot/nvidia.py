@@ -8,7 +8,7 @@ every exception message.  It never calls a paid proxy.
 The free tier is throttled to at most 30 requests per minute (the lead reports a ~40/min
 limit).  HTTP 429 is retried with backoff; a caller can stop cleanly by not retrying.
 
-JOB12 declared pre-pilot wiring amendment (decided from the lead's 2026-11-14T04:33Z
+Declared pre-pilot wiring amendment #1 (decided from the lead's 2026-11-14T04:33Z
 wiring probe, not from any pilot outcome):
 
 * both NVIDIA models are requested with ``max_tokens = 2048`` and a 120 s request timeout;
@@ -18,14 +18,14 @@ wiring probe, not from any pilot outcome):
 * a read timeout is retried **once** with the identical request, then recorded as a
   transport error.
 
-JOB13 declared pre-pilot wiring amendment #2 (supersedes only the token budget):
+Declared pre-pilot wiring amendment #2 (supersedes only the token budget):
 
 * both NVIDIA models are requested with ``max_tokens = 4096`` (same budget for both, for
   fairness); the 120 s timeout and the single identical-body retry on a read timeout are
   unchanged;
-* JOB12's 2048 value is kept as declared history in :func:`nvidia_request_amendment`.
+* Amendment #1's 2048 value is kept as declared history in :func:`nvidia_request_amendment`.
 
-The scoring side of JOB13 lives in ``vera.pilot.runtime``: a model that returns no usable
+The scoring side of amendment #2 lives in ``vera.pilot.runtime``: a model that returns no usable
 action is a scored FAIL, never INVALID.
 """
 
@@ -47,18 +47,18 @@ NVIDIA_KEY_ENV = "NVIDIA_API_KEY"
 NVIDIA_PROVIDER_FAMILY = "nvidia_nim"
 NVIDIA_MAX_REQUESTS_PER_MINUTE = 30
 NVIDIA_MIN_INTERVAL_SECONDS = 60.0 / NVIDIA_MAX_REQUESTS_PER_MINUTE
-# JOB14: optional one-worker-per-model parallelism.  Each worker gets its own client and
+# Optional one-worker-per-model parallelism.  Each worker gets its own client and
 # its own throttle; the per-worker interval is widened so the JOINT ceiling stays at the
 # declared 30 requests/min (2 workers x 15 rpm = 30 rpm, i.e. one request every 4 s each).
 NVIDIA_PARALLEL_WORKERS = 2
 NVIDIA_PARALLEL_MIN_INTERVAL_SECONDS = (
     NVIDIA_MIN_INTERVAL_SECONDS * NVIDIA_PARALLEL_WORKERS
 )
-# JOB08's declared floor, kept unchanged for the preregistered plan and route records.
+# The earlier declared floor, kept unchanged for the preregistered plan and route records.
 NVIDIA_MIN_MAX_TOKENS = 512
-# JOB12's declared request settings, kept as declared history.
+# Amendment #1's declared request settings, kept as declared history.
 NVIDIA_JOB12_REQUEST_MAX_TOKENS = 2048
-# JOB13 declared request settings for BOTH models (pre-pilot wiring amendment #2).
+# Amendment #2 declared request settings for BOTH models (pre-pilot wiring amendment #2).
 NVIDIA_REQUEST_MAX_TOKENS = 4096
 NVIDIA_REQUEST_TIMEOUT_SECONDS = 120
 NVIDIA_TIMEOUT_RETRIES = 1
@@ -79,7 +79,7 @@ NVIDIA_SLOT_MODELS = {
 # The plan's internal ids keep the provider prefix so the route is unambiguous.  The NIM
 # API id is *usually* the internal id minus that prefix, but not always: the lead's
 # 2026-11-13 probe lists the second model as ``nvidia/nemotron-3.5-lightning-30b-a3b``, so
-# its API id keeps the ``nvidia/`` organisation prefix.  Stripping blindly sent the JOB08
+# its API id keeps the ``nvidia/`` organisation prefix.  Stripping blindly sent the
 # smoke to ``nemotron-3.5-lightning-30b-a3b`` and the endpoint answered HTTP 404.  The
 # mapping is explicit and total for the preregistered ids; unknown ids keep the old rule.
 NVIDIA_API_MODEL_IDS = {
@@ -119,7 +119,7 @@ class NvidiaCallError(NvidiaError):
 class NvidiaModelFailure(NvidiaCallError):
     """HTTP 200 with no usable answer: a model failure recorded against the step.
 
-    The JOB12 declaration separates this from a transport error: the request and the
+    Amendment #1 separates this from a transport error: the request and the
     connection worked, the model spent its whole token budget on reasoning and returned
     empty content with ``finish_reason == 'length'``.  It is counted as a recorded model
     failure for that step, never retried with a larger budget.
@@ -129,13 +129,13 @@ class NvidiaModelFailure(NvidiaCallError):
 
 
 class NvidiaResponseError(NvidiaCallError):
-    """HTTP 200 whose payload contains no usable action (JOB13).
+    """HTTP 200 whose payload contains no usable action (amendment #2).
 
-    JOB12 kept this as an ordinary call error; JOB13 (scoring integrity) classifies any
+    Amendment #1 kept this as an ordinary call error; amendment #2 (scoring integrity) classifies any
     HTTP 200 response that yields no action text as a *model* failure, because the
     request and connection worked and the model produced nothing usable.  It is never an
     infrastructure fault, so it can never make an episode INVALID.  It remains a
-    ``NvidiaCallError`` subclass so JOB12's declared type checks keep holding.
+    ``NvidiaCallError`` subclass so amendment #1's declared type checks keep holding.
     """
 
     error_kind = "MODEL_FAILURE"
@@ -176,10 +176,10 @@ class NvidiaResult:
 
 
 def nvidia_request_amendment() -> dict:
-    """The JOB12 declared pre-pilot wiring amendment, reused by both manifests.
+    """Declared pre-pilot wiring amendment #1, reused by both manifests.
 
-    Historical record only: JOB13's :func:`nvidia_budget_amendment` supersedes the token
-    budget.  The stored value (2048) is intentionally not updated here so the JOB12
+    Historical record only: amendment #2, :func:`nvidia_budget_amendment`, supersedes the token
+    budget.  The stored value (2048) is intentionally not updated here so the original
     declaration stays auditable.
     """
     return {
@@ -249,12 +249,12 @@ def nvidia_request_amendment() -> dict:
 
 
 def nvidia_budget_amendment() -> dict:
-    """JOB13 declared pre-pilot wiring amendment #2: both models get 4096 tokens.
+    """Declared pre-pilot wiring amendment #2: both models get 4096 tokens.
 
-    Decided from the `$0` JOB12 smoke evidence (both models called, 0 transport errors,
+    Decided from the `$0` smoke evidence of amendment #1 (both models called, 0 transport errors,
     nemotron hit the 2048-token ceiling with empty content at `finish_reason='length'`),
     not from any pilot outcome.  Same budget for both models keeps the comparison fair;
-    timeout and retry policy are unchanged from JOB12.
+    timeout and retry policy are unchanged from amendment #1.
     """
     return {
         "amendment_id": "JOB13_NVIDIA_TOKEN_BUDGET",
@@ -480,7 +480,7 @@ class NvidiaClient:
     ) -> NvidiaResult:
         key = self._key()
         api_id = api_model_id(model_id)
-        # JOB13: both NVIDIA models get the declared 4096-token request budget (same
+        # Amendment #2: both NVIDIA models get the declared 4096-token request budget (same
         # budget for both).  A caller asking for less (the plan asks for 384/512 output
         # tokens) is raised to the declared budget; a retry never raises it further.
         token_cap = max(int(max_tokens), NVIDIA_REQUEST_MAX_TOKENS)
@@ -501,7 +501,7 @@ class NvidiaClient:
             try:
                 status, payload = self.transport.post(NVIDIA_CHAT_PATH, body, key)
             except NvidiaTransportError as exc:
-                # JOB12: a read timeout gets exactly one retry with the identical body;
+                # Amendment #1: a read timeout gets exactly one retry with the identical body;
                 # after that it is a recorded transport error.  Other reachability
                 # failures keep the ordinary retry budget.
                 if exc.timed_out and timeout_retries_left > 0:
@@ -558,7 +558,7 @@ class NvidiaClient:
                 finish_reason = str(choice.get("finish_reason") or "")
             text_value = "" if text is None else str(text)
             if not text_value.strip():
-                # JOB12: an HTTP 200 with empty content because the token budget ran out
+                # Amendment #1: an HTTP 200 with empty content because the token budget ran out
                 # is a model failure for this step.  It is not retried with a larger
                 # budget and it is not reported as a transport error.
                 if finish_reason == "length":
@@ -567,7 +567,7 @@ class NvidiaClient:
                         f"finish_reason='length' at max_tokens={token_cap}; recorded as a "
                         "model failure for this step (no larger-budget retry)"
                     )
-                # JOB13: any other HTTP 200 without usable action text is a model failure
+                # Amendment #2: any other HTTP 200 without usable action text is a model failure
                 # too (the request worked; the model produced nothing usable), so it is
                 # scored FAIL/PARTIAL and never makes an episode INVALID.
                 raise NvidiaResponseError(

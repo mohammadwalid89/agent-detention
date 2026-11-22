@@ -1,4 +1,4 @@
-"""VERA v1.2 delegation core (JOB19 core, JOB20 build part 2).
+"""VERA v1.2 delegation core.
 
 A new package: nothing here changes v1 pilot behaviour, readiness v2/v3, the mechanism
 manifests or the pilot runner.  Entry points:
@@ -29,7 +29,7 @@ manifests or the pilot runner.  Entry points:
 ``vera.delegation.sidecar``
     the private Detention side-car draft and its independent-review gate;
 ``vera.delegation.providers``
-    JOB23 paid-provider adapters (Anthropic Messages, OpenAI Responses/Chat, Gemini),
+    Paid-provider adapters (Anthropic Messages, OpenAI Responses/Chat, Gemini),
     a price-table-driven cost accounting layer, the hard paid gate and a running meter.
     Every adapter refuses without the full gate and no adapter dials a network implicitly.
 

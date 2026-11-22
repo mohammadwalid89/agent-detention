@@ -1,11 +1,11 @@
-"""JOB27: v1.3 grid runner for the model routes in the route registry.
+"""v1.3 grid runner for the model routes in the route registry.
 
 The runner executes the *frozen* assignment table produced by :mod:`runplan_v13`.  It does
 not choose tasks, conditions, models or labels.  It adds the operational layer the design
 requires around the already-built v1.3 mechanism:
 
 * one paced worker pool per route (concurrency and min interval are configuration data from
-  the measured JOB25 smoke, never constants in this module);
+  the measured route smoke, never constants in this module);
 * an append-only episode ledger keyed by every assignment factor, so a restart is idempotent
   and a completed episode is never executed twice;
 * ``ROUTE_LIMIT`` pauses only that route, persists the pause, auto-resumes at the configured
@@ -13,11 +13,11 @@ requires around the already-built v1.3 mechanism:
 * the frozen exception rule: a model failure is a scored episode, while an infrastructure
   failure is recorded separately and is never silently converted into a model result;
 * a stage gate that rejects a live main-grid start unless a valid preregistration root hash,
-  an Astra acceptance file and an owner approval file are supplied;
+  a reviewer acceptance file and an owner approval file are supplied;
 * a live progress file and a capacity planner over measured calls/minute and limit windows.
 
 No command in this module makes a model call by default.  The live path constructs the
-JOB25 adapters; ``--dry-run`` uses ``MockAdapter`` and needs no stage gate.
+route adapters; ``--dry-run`` uses ``MockAdapter`` and needs no stage gate.
 """
 
 from __future__ import annotations
@@ -103,7 +103,7 @@ DETENTION_RESULT_KIND = "vera.v13_detention_result.v1"
 RUN_SCOPE_MAIN_GRID = "main_grid"
 RUN_SCOPE_SHAKEDOWN = "shakedown"
 RUN_SCOPE_DRY_RUN = "dry_run"
-#: M11: the Detention pilot.  Not the main grid, never pooled with it; requires transcripts,
+#: The Detention pilot.  Not the main grid, never pooled with it; requires transcripts,
 #: measured routes, the Claude-only profile and an owner-signed case text; labels every record.
 RUN_SCOPE_PILOT = "pilot"
 PILOT_LABEL = "PILOT"
@@ -118,7 +118,7 @@ DEFAULT_ASSIGNMENT = "assignment_table.json"
 DEFAULT_SUMMARY = "run_summary.json"
 DEFAULT_EPISODE_DIR = "episodes"
 DEFAULT_EPISODE_CALL_DIR = "episode_calls"
-#: M7(a): how many times one Detention row is re-queued after a route limit before the
+#: How many times one Detention row is re-queued after a route limit before the
 #: phase stops incomplete (the main phase re-queues without a cap; a mock that never recovers
 #: must not spin forever).
 DETENTION_MAX_REQUEUES = 20
@@ -130,7 +130,7 @@ DEFAULT_DETENTION_DIR = "detention"
 # 30 requests/minute.  Measured rates below this value are used as given.
 NVIDIA_MAX_REQUESTS_PER_MINUTE = 30.0
 
-# The frozen JOB13/JOB25 exception rule.  These are infrastructure outcomes, not model
+# The frozen exception rule.  These are infrastructure outcomes, not model
 # failures.  ROUTE_LIMIT and AUTH_EXPIRED have their own run-level behaviour.
 INFRASTRUCTURE_KINDS = (
     ERROR_TRANSPORT,
@@ -256,7 +256,7 @@ def percentile_ms(samples: Sequence[float], fraction: float) -> float | None:
 
 
 def summarise_latencies(samples: Sequence[float]) -> dict:
-    """JOB53/B6: per-call latency summary reported in progress and signed summaries."""
+    """Per-call latency summary reported in progress and signed summaries."""
     values = [float(value) for value in samples]
     if not values:
         return {
@@ -688,7 +688,7 @@ def load_runner_config(
             raise RunnerConfigError("route_limit_retry_seconds must be numeric") from None
         if retry_value <= 0:
             raise RunnerConfigError("route_limit_retry_seconds must be > 0")
-    # JOB53/B7: the owner's call cap is a runner option, charged before every adapter call.
+    # The owner's call cap is a runner option, charged before every adapter call.
     max_calls = raw.get("max_model_calls")
     if max_calls in (None, ""):
         max_calls_value = None
@@ -762,7 +762,7 @@ def _bound_hash(data: Mapping, expected: str, label: str) -> str:
 def validate_pre_main_stage_completion(
     *, prereg_root: str | Path, root: Mapping | None = None
 ) -> dict:
-    """JOB55/Astra finding 6: the main gate needs every pre-main row completed.
+    """Review finding 6: the main gate needs every pre-main row completed.
 
     The preregistration deliberately defers ``FREEZE_BEFORE_MAIN_RUN``,
     ``ROUTE_PREFLIGHT_BEFORE_FIRST_CALL`` and ``CALIBRATION_BEFORE_FIRST_MAIN_EPISODE``.
@@ -812,7 +812,7 @@ def validate_stage_gate(
     *,
     prereg_root: str | Path | None,
     prereg_hash: str | None,
-    astra_acceptance: str | Path | None,
+    reviewer_acceptance: str | Path | None,
     owner_approval: str | Path | None,
     now_utc: str | None = None,
 ) -> dict:
@@ -822,7 +822,7 @@ def validate_stage_gate(
         for name, value in (
             ("preregistration ROOT_MANIFEST path", prereg_root),
             ("preregistration ROOT_MANIFEST hash", prereg_hash),
-            ("Astra acceptance file path", astra_acceptance),
+            ("reviewer acceptance file path", reviewer_acceptance),
             ("owner approval file path", owner_approval),
         )
         if not value
@@ -848,17 +848,17 @@ def validate_stage_gate(
             + "; ".join(bundle_report.get("problems") or ["unknown problem"])
         )
 
-    astra_path = Path(astra_acceptance)
-    astra = _load_json_object(astra_path, "Astra acceptance")
-    _affirmative(astra, "Astra acceptance")
+    acceptance_path = Path(reviewer_acceptance)
+    acceptance = _load_json_object(acceptance_path, "reviewer acceptance")
+    _affirmative(acceptance, "reviewer acceptance")
     reviewer = str(
-        astra.get("reviewer") or astra.get("reviewed_by") or astra.get("accepted_by") or ""
+        acceptance.get("reviewer") or acceptance.get("reviewed_by") or acceptance.get("accepted_by") or ""
     ).strip()
     if not reviewer:
-        raise StageGateError("Astra acceptance needs a named reviewer")
-    _bound_hash(astra, calculated, "Astra acceptance")
-    if astra.get("kind") not in (None, "vera.astra_acceptance.v1"):
-        raise StageGateError("Astra acceptance kind is not vera.astra_acceptance.v1")
+        raise StageGateError("reviewer acceptance needs a named reviewer")
+    _bound_hash(acceptance, calculated, "reviewer acceptance")
+    if acceptance.get("kind") not in (None, "vera.reviewer_acceptance.v1"):
+        raise StageGateError("reviewer acceptance kind is not vera.reviewer_acceptance.v1")
 
     owner_path = Path(owner_approval)
     owner = _load_json_object(owner_path, "owner approval")
@@ -883,7 +883,7 @@ def validate_stage_gate(
                 f"owner approval expired at {expires_at} (now {now})"
             )
 
-    # JOB55/Astra findings 1+6: the main gate is not just a hash-bound approval.  It also
+    # Review findings 1+6: the main gate is not just a hash-bound approval.  It also
     # requires the active source to BE the preregistered set-12 bytes, every pre-main
     # prerequisite row to be complete and the exact assignment hash to exist.  All three are
     # hard refusals; no optional flag can bypass them.
@@ -900,9 +900,9 @@ def validate_stage_gate(
         "prereg_root_manifest": str(root_path),
         "prereg_root_sha256": calculated,
         "prereg_root_file_sha256": sha256_file(root_path),
-        "astra_acceptance": str(astra_path),
-        "astra_acceptance_sha256": sha256_file(astra_path),
-        "astra_reviewer": reviewer,
+        "reviewer_acceptance": str(acceptance_path),
+        "reviewer_acceptance_sha256": sha256_file(acceptance_path),
+        "acceptance_reviewer": reviewer,
         "owner_approval": str(owner_path),
         "owner_approval_sha256": sha256_file(owner_path),
         "owner": owner_name,
@@ -920,9 +920,9 @@ def validate_stage_gate(
 def _validate_shakedown_gate_mapping(
     data: Mapping, *, now_utc: str | None = None
 ) -> dict:
-    """Validate an honest non-main-grid shakedown gate (JOB53/B1).
+    """Validate an honest non-main-grid shakedown gate.
 
-    A shakedown gate does not claim a preregistration, an Astra acceptance or a main-grid
+    A shakedown gate does not claim a preregistration, a reviewer acceptance or a main-grid
     owner approval.  It must instead carry the owner's job reference, an explicit
     ``not_main_grid`` marker, a scope other than ``main_grid`` and an expiry.  The run
     records the scope, and :func:`assert_main_grid_summary` refuses to read it as
@@ -988,7 +988,7 @@ def validate_shakedown_gate(
 
 
 def _validate_pilot_gate_mapping(data: Mapping, *, now_utc: str | None = None) -> dict:
-    """Validate the owner's pilot gate (M11).
+    """Validate the owner's pilot gate.
 
     The pilot is not the main grid, so it needs no preregistration; it needs the owner's own
     statement that this pilot may spend model calls on THIS case text:
@@ -1062,7 +1062,7 @@ def validate_gate_document(
 ) -> dict:
     """Validate a gate *inside* the runner instead of trusting ``gate['valid']``.
 
-    ``main_grid`` is re-validated against its preregistration root file, Astra acceptance
+    ``main_grid`` is re-validated against its preregistration root file, reviewer acceptance
     and owner approval.  A shakedown gate is validated for kind, scope, job reference and
     expiry.  Anything else is refused.
     """
@@ -1075,7 +1075,7 @@ def validate_gate_document(
         validated = validate_stage_gate(
             prereg_root=gate.get("prereg_root_manifest"),
             prereg_hash=gate.get("prereg_root_sha256"),
-            astra_acceptance=gate.get("astra_acceptance"),
+            reviewer_acceptance=gate.get("reviewer_acceptance"),
             owner_approval=gate.get("owner_approval"),
             now_utc=now_utc,
         )
@@ -1095,7 +1095,7 @@ def validate_gate_document(
 
 
 def assert_pilot_summary(summary: Mapping) -> dict:
-    """The pilot analysis reads only pilot data, and only data that says so (M11)."""
+    """The pilot analysis reads only pilot data, and only data that says so."""
     scope = str(summary.get("run_scope") or "")
     if scope != RUN_SCOPE_PILOT or summary.get("label") != PILOT_LABEL:
         raise RunnerConfigError(
@@ -1142,10 +1142,10 @@ class EpisodeContext:
     ) -> None:
         self.route_calls[route_id] += 1
         latency = round(float(latency_ms or 0.0), 3)
-        # M13: the expected and the provider-reported model, and the verdict, on every call.
+        # The expected and the provider-reported model, and the verdict, on every call.
         served_verdict = served_model_check(expected_model_id, result.served_model_id)
         self.served_model_checks[served_verdict] += 1
-        # JOB53/B6: every call's latency is recorded, not only an aggregate afterwards.
+        # Every call's latency is recorded, not only an aggregate afterwards.
         self.call_latencies.append({
             "route_id": route_id,
             "latency_ms": latency,
@@ -1350,7 +1350,7 @@ class RouteDispatcher:
         successes: int = 0,
         errors: Mapping[str, int] | None = None,
     ) -> None:
-        """JOB53/B7: seed cumulative route counters from persisted runner state."""
+        """Seed cumulative route counters from persisted runner state."""
         with self._lock:
             self._calls = max(self._calls, int(calls))
             self._successes = max(self._successes, int(successes))
@@ -1447,7 +1447,7 @@ class RouteDispatcher:
         if auto_resumed:
             self._on_auto_resume(self.route_id, "configured retry time reached")
         if self._charge_call is not None:
-            # JOB53/B7: the cap is charged before the adapter call, inside the runner.
+            # The cap is charged before the adapter call, inside the runner.
             self._charge_call(self.route_id)
         started = self._clock()
         try:
@@ -1472,7 +1472,7 @@ class RouteDispatcher:
                 error="adapter returned a non-AdapterResult value",
                 error_kind=ERROR_TRANSPORT,
             )
-        # M13: compare the provider-reported (served) model, not only the configured id:
+        # Compare the provider-reported (served) model, not only the configured id:
         # ``model_id`` is filled from the adapter's own configuration, so comparing it alone
         # could never fire for a real route.
         served_mismatch = (
@@ -1644,10 +1644,10 @@ def load_assignment_rows(
     """Load the exact frozen rows, or regenerate them with the frozen generator.
 
     ``patterns`` defaults to the base P0 block for API compatibility.  Pass
-    ``ENROLLED_PATTERNS`` (or use the CLI ``--full-plan`` flag) to generate the JOB38
+    ``ENROLLED_PATTERNS`` (or use the CLI ``--full-plan`` flag) to generate the
     full-cross plan: every base row under P0_BASE/P1/P2/P3.
 
-    JOB55/Astra finding 1: in ``main_grid`` scope an omitted pattern level, a short table or
+    Review finding 1: in ``main_grid`` scope an omitted pattern level, a short table or
     a reduced repeat count is a hard refusal.  There is no partial main assignment.
     """
     meta: dict = {}
@@ -2093,16 +2093,16 @@ class GridRunner:
         clock: Callable[[], float] = time.monotonic,
         sleep: Callable[[float], None] = time.sleep,
     ):
-        # M1: live runs always write transcripts.  ``record_transcripts`` extends the same
+        # Live runs always write transcripts.  ``record_transcripts`` extends the same
         # record to the mocks used by dry runs and tests, so a dry run can be read the way a
         # live run can.
         self.record_transcripts = bool(record_transcripts)
-        # M8: "v13" is the frozen four-arm retry-only Detention; "v14" is the pilot design
+        # "v13" is the frozen four-arm retry-only Detention; "v14" is the pilot design
         # (arms A, B, C, E; paired-mechanism eligibility; sibling transfer is the outcome).
         if detention_protocol not in ("v13", "v14"):
             raise RunnerConfigError(f"unknown detention protocol {detention_protocol!r}")
         self.detention_protocol = detention_protocol
-        # M11: solo mode.  No peer menu, delegation budget 0, a prompt that never mentions
+        # Solo mode.  No peer menu, delegation budget 0, a prompt that never mentions
         # delegating.  A row may also ask for it (``solo``).
         self.solo = bool(solo)
         self.rows = [dict(row) for row in rows]
@@ -2208,7 +2208,7 @@ class GridRunner:
     def _load_instances(self) -> dict[str, object]:
         """Load instances from the validated frozen active source (set 12).
 
-        JOB55/Astra finding 1: this used the set-10 ``load_instances()`` helper regardless of
+        Review finding 1: this used the set-10 ``load_instances()`` helper regardless of
         the D1 resolver, so the runner executed set 10 while claiming set 12.  There is now
         exactly one source: :func:`source_binding.resolve_source_binding`, which proves the
         attributable owner-review marker, the preregistered source hash and the
@@ -2253,11 +2253,11 @@ class GridRunner:
                 f"{len(self._instances)} of {len(bound)} validated instances"
             )
 
-    # -- exclusive run-directory lock (JOB53/B5) -----------------------------
+    # -- exclusive run-directory lock -----------------------------
     def _acquire_run_lock(self) -> None:
         """Take an exclusive, non-blocking lock on this run directory.
 
-        Two live runners on one directory interleaved signed ledger records in JOB52.  The
+        Two live runners on one directory interleaved signed ledger records in an earlier run.  The
         lock is an ``flock`` so a killed shell cannot orphan it: the kernel releases the
         lock when the last descriptor closes.
         """
@@ -2306,7 +2306,7 @@ class GridRunner:
         except OSError:
             pass
 
-    # -- gate validation inside the runner (JOB53/B1) ------------------------
+    # -- gate validation inside the runner ------------------------
     def _resolve_run_id(self) -> None:
         """Keep one run id for one run directory across crash/resume segments.
 
@@ -2346,7 +2346,7 @@ class GridRunner:
         return scope
 
     def _declared_non_cli_routes(self) -> dict:
-        """Live-route facts for the routes whose declared transport is direct (M11).
+        """Live-route facts for the routes whose declared transport is direct.
 
         The preflight acceptance check compares each route the run uses with these facts.
         A route whose transport is undeclared is left out, so the check refuses it.
@@ -2364,7 +2364,7 @@ class GridRunner:
         return live
 
     def _validate_pilot_scope(self, validated: Mapping) -> dict:
-        """M11: a pilot run cannot be weakened by flags either."""
+        """A pilot run cannot be weakened by flags either."""
         from .routes.preflight import validate_preflight_acceptance
 
         problems: list[str] = []
@@ -2413,11 +2413,11 @@ class GridRunner:
         return self._main_binding
 
     def _label_fields(self) -> dict:
-        """``{"label": "PILOT"}`` on every record of a pilot run, else nothing (M11)."""
+        """``{"label": "PILOT"}`` on every record of a pilot run, else nothing."""
         return {"label": PILOT_LABEL} if self._run_scope == RUN_SCOPE_PILOT else {}
 
     def _validate_main_scope(self, validated: Mapping) -> dict:
-        """JOB55/Astra finding 6: a main-grid run cannot be weakened by flags.
+        """Review finding 6: a main-grid run cannot be weakened by flags.
 
         The scope requires the complete frozen assignment, measured routes and a separately
         authorized bounded-preflight artifact.  ``--allow-unmeasured-routes``,
@@ -2478,7 +2478,7 @@ class GridRunner:
         }
         return self._main_binding
 
-    # -- call cap and cumulative counters (JOB53/B7) -------------------------
+    # -- call cap and cumulative counters -------------------------
     def _charge_model_call(self, route_id: str) -> None:
         limit = self.config.max_model_calls
         blocked = False
@@ -2786,7 +2786,7 @@ class GridRunner:
     ) -> dict:
         """Verify the CURRENT signed ledger chain and its completed-result inventory.
 
-        JOB56/Astra finding 3: Detention previously trusted the historical
+        Review finding 3: Detention previously trusted the historical
         ``main_summary.ledger.verification.ok`` flag.  This gate is shared by the main and
         Detention entry points, runs under the already acquired run lock, reads the current
         ledger, verifies every HMAC/chain link, verifies every signed completed-result file,
@@ -2986,7 +2986,7 @@ class GridRunner:
                 on_call_recorded=self._on_call_recorded,
                 charge_call=self._charge_model_call,
             )
-            # JOB53/B7: a resumed segment reports cumulative, persisted route counters.
+            # A resumed segment reports cumulative, persisted route counters.
             dispatcher.seed_counters(
                 calls=int(dict(self._state.get("route_calls") or {}).get(route_id, 0)),
                 successes=int(
@@ -3019,7 +3019,7 @@ class GridRunner:
             else:
                 pause_until = None
             if route_id in self.resume_routes:
-                # JOB53/B2: restore the persisted pause first, then resume it, so the
+                # Restore the persisted pause first, then resume it, so the
                 # signed ledger always receives an attributable ``route_resumed`` record.
                 dispatcher.restore_pause(info, pause_until=pause_until)
                 self.resume_route(route_id, reason="startup command")
@@ -3097,7 +3097,7 @@ class GridRunner:
         outcome = dispatcher.resume(reason=reason)
         self._state.get("pauses", {}).pop(route_id, None)
         self._persist_state()
-        # JOB53/B2: a startup resume removes a *persisted* pause, so the signed record must
+        # A startup resume removes a *persisted* pause, so the signed record must
         # be written even when the fresh dispatcher reports was_paused=False.
         if outcome.get("was_paused") or persisted:
             self._append_ledger({
@@ -3137,7 +3137,7 @@ class GridRunner:
 
     # -- preflight and signed episode call logs ------------------------------
     def _run_isolation_preflight(self) -> dict:
-        """JOB39 protocol stage (now the route preflight), executed before any live episode."""
+        """Protocol stage (now the route preflight), executed before any live episode."""
         if self.dry_run:
             report = {
                 "kind": PREFLIGHT_RECORD_KIND,
@@ -3295,13 +3295,13 @@ class GridRunner:
             "sha256": sha256_file(path),
             "records": len(records),
             "read_problems": problems,
-            # M1: whether every record carries its messages and reply_text.
+            # Whether every record carries its messages and reply_text.
             "transcripts_complete": bool(transcript["ok"]),
             "transcript_problems": list(transcript["problems"]),
         }
 
     def _episode_verdict(self, context: "EpisodeContext", attempt: int) -> dict:
-        """Classify what happened on the route during one episode or Detention row (M7(a)).
+        """Classify what happened on the route during one episode or Detention row.
 
         One rule for the main phase and the Detention phase.  ``interrupted``: the unit is not
         complete and must not be written as completed (model substitution and auth expiry end
@@ -3395,7 +3395,7 @@ class GridRunner:
             four_slot=True,
             menu_position_seed=int(row["menu_position_seed"]),
             label_permutation=int(row["label_permutation"]),
-            # M4: rows carry an optional ``protocol``; absent = the frozen v13 behaviour.
+            # Rows carry an optional ``protocol``; absent = the frozen v13 behaviour.
             protocol=str(row.get("protocol") or "v13"),
             solo=bool(self.solo or row.get("solo")),
         )
@@ -3742,7 +3742,7 @@ class GridRunner:
         self._emit("episode_completed", {"resume_key": key, "status": "completed"})
         return {"status": "completed", "requeue": False, "key": key}
 
-    # -- detention phase (JOB53/B3) -----------------------------------------
+    # -- detention phase -----------------------------------------
     def _detention_dir(self) -> Path:
         return self.workdir / DEFAULT_DETENTION_DIR
 
@@ -3772,7 +3772,7 @@ class GridRunner:
     def run_detention_phase(self) -> dict:
         """Execute the frozen Detention retry phase after a completed main phase.
 
-        JOB53/B3: the runner now owns this path.  It refuses to start without a signed,
+        The runner now owns this path.  It refuses to start without a signed,
         completed main summary and a verifying ledger, uses the frozen F=660 eligibility
         cap / 4-arm table / one retry, routes every review and retry through the same
         dispatchers, ledger, signer and call cap, and writes a separate signed summary
@@ -3829,14 +3829,14 @@ class GridRunner:
                 "detention phase refused: main phase status is "
                 f"{main_summary.get('status')!r}, not completed"
             )
-        # JOB56/Astra finding 3: make the CURRENT ledger + completed main inventory the gate,
+        # Review finding 3: make the CURRENT ledger + completed main inventory the gate,
         # under the lock already acquired by run_detention_phase().  This is the same helper
         # the main entry point uses; the signed summary's historical flag is not sufficient.
         integrity = self._verify_integrity_gate(
             main_summary, require_completed_main=True
         )
         self._run_scope = str(main_summary.get("run_scope") or self._run_scope)
-        # M7: the main phase's ``finally`` sets the stop event as part of its normal wind-down.
+        # The main phase's ``finally`` sets the stop event as part of its normal wind-down.
         # ``main()`` runs this phase on the same runner object straight afterwards, so without
         # this every Detention route call raised RunStopped ("run stopped before the route call
         # started") and no live Detention row could ever complete.  A real stop (fatal reason,
@@ -3919,7 +3919,7 @@ class GridRunner:
             if isinstance(candidate, dict) and candidate:
                 candidates.append(candidate)
 
-        # JOB56/Astra finding 2: selection is persisted once and resumed by binding, not
+        # Review finding 2: selection is persisted once and resumed by binding, not
         # recomputed (resampled) on every phase invocation.
         if selection_path.is_file():
             try:
@@ -4245,7 +4245,7 @@ class GridRunner:
         persist_state("running", "scheduled")
 
         # Resume from signed Detention result files, never from a fresh key resample.
-        # JOB58/Astra finding 2: reconcile the signed completion ledger, the signed result
+        # Review finding 2: reconcile the signed completion ledger, the signed result
         # inventory and the persisted arm schedule in both directions before any new
         # adapter call.  A completed ledger key whose result file is missing or mismatched
         # is a refusal: the original artifact must be recovered, never reacquired.
@@ -4477,7 +4477,7 @@ class GridRunner:
                     "cell_hash": str(cell.cell_hash),
                     "schedule_position": int(schedule_row.get("position") or 0),
                 })
-                # M7(a): one row = one or more attempts.  After every attempt the route errors
+                # One row = one or more attempts.  After every attempt the route errors
                 # are classified by the same helper the main phase uses; a row that hit a route
                 # limit, auth expiry, substitution or transport error is NEVER written as
                 # completed (it used to be: the arm swallowed the errored call and carried on).
@@ -4767,7 +4767,7 @@ class GridRunner:
                     "outcome_digest": json_digest(outcome),
                     "outcome": outcome,
                 }
-                # M1: the digest of this row's call log (transcripts included).
+                # The digest of this row's call log (transcripts included).
                 row_call_log = (
                     {}
                     if self.dry_run and not self.record_transcripts
@@ -4938,7 +4938,7 @@ class GridRunner:
 
     # -- main loop -----------------------------------------------------------
     def run(self) -> dict:
-        """Execute the frozen table under an exclusive run-directory lock (JOB53/B5)."""
+        """Execute the frozen table under an exclusive run-directory lock."""
         self.workdir.mkdir(parents=True, exist_ok=True)
         self._acquire_run_lock()
         try:
@@ -4950,7 +4950,7 @@ class GridRunner:
         self.workdir.mkdir(parents=True, exist_ok=True)
         self._result_dir.mkdir(parents=True, exist_ok=True)
 
-        # JOB53/B1: the runner validates the gate kind/scope itself (and the main-grid
+        # The runner validates the gate kind/scope itself (and the main-grid
         # preregistration hash) instead of trusting a caller-injected ``valid`` flag.
         self._run_scope = self._validate_run_gate()
         self._resolve_run_id()
@@ -4975,7 +4975,7 @@ class GridRunner:
                 )
         self._load_ledger()
         self._load_state()
-        # JOB56/Astra finding 3: the main entry point uses the same integrity gate as
+        # Review finding 3: the main entry point uses the same integrity gate as
         # Detention.  It verifies the current ledger chain and its binding to every signed
         # completed result before any dispatcher or adapter is built.
         self._integrity_gate = self._verify_integrity_gate()
@@ -5768,10 +5768,10 @@ def cmd_runner(args: argparse.Namespace) -> int:
         binding = resolve_source_binding()
         gate: dict = {}
         if not dry_run:
-            # JOB53/B1: gate validation happens inside the JSON-refusal path, so a missing
+            # Gate validation happens inside the JSON-refusal path, so a missing
             # gate returns REFUSED_STAGE_GATE instead of an uncaught traceback.
             if getattr(args, "pilot", False):
-                if any((args.prereg_root, args.prereg_hash, args.astra_acceptance, args.owner_approval)):
+                if any((args.prereg_root, args.prereg_hash, args.reviewer_acceptance, args.owner_approval)):
                     raise StageGateError(
                         "--pilot may not be combined with main-grid gate arguments"
                     )
@@ -5787,7 +5787,7 @@ def cmd_runner(args: argparse.Namespace) -> int:
                     (
                         args.prereg_root,
                         args.prereg_hash,
-                        args.astra_acceptance,
+                        args.reviewer_acceptance,
                         args.owner_approval,
                     )
                 ):
@@ -5803,7 +5803,7 @@ def cmd_runner(args: argparse.Namespace) -> int:
                 gate = validate_stage_gate(
                     prereg_root=args.prereg_root,
                     prereg_hash=args.prereg_hash,
-                    astra_acceptance=args.astra_acceptance,
+                    reviewer_acceptance=args.reviewer_acceptance,
                     owner_approval=args.owner_approval,
                 )
             print(json.dumps({"stage_gate": gate}, sort_keys=True))
@@ -5956,7 +5956,7 @@ def add_runner_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--assignment", default=None, help="frozen assignment table JSON")
     parser.add_argument("--manifest", default=None, help="v1.3 condition manifest")
     parser.add_argument("--run-plan", default=None, help="V13_RUN_PLAN.json")
-    parser.add_argument("--out", default="artifacts/checkpoints/JOB27/run",
+    parser.add_argument("--out", default="artifacts/run",
                         help="run directory (ledger, progress, results)")
     parser.add_argument("--dry-run", action="store_true",
                         help="use MockAdapter; no stage gate, no network")
@@ -5976,7 +5976,7 @@ def add_runner_arguments(parser: argparse.ArgumentParser) -> None:
                         help="also record messages/reply_text for mock (dry-run) adapters; "
                         "live runs always record them")
     parser.add_argument("--full-plan", action="store_true",
-                        help="execute the JOB38 full cross (P0-P3, 4320 episodes)")
+                        help="execute the full cross (P0-P3, 4320 episodes)")
     parser.add_argument("--pattern", action="append", default=[],
                         choices=list(PATTERN_DISPLAY),
                         help="organization pattern to assign (repeatable; default P0_BASE)")
@@ -5999,8 +5999,8 @@ def add_runner_arguments(parser: argparse.ArgumentParser) -> None:
                         help="path to preregistration ROOT_MANIFEST.json (live only)")
     parser.add_argument("--prereg-hash", default=None,
                         help="expected preregistration root_sha256 (live only)")
-    parser.add_argument("--astra-acceptance", default=None,
-                        help="Astra acceptance JSON path (live only)")
+    parser.add_argument("--reviewer-acceptance", default=None,
+                        help="independent reviewer's acceptance JSON path (live only)")
     parser.add_argument("--owner-approval", default=None,
                         help="owner approval JSON path (live only)")
     parser.add_argument("--shakedown", action="store_true",
@@ -6023,7 +6023,7 @@ def add_capacity_arguments(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--no-detention", action="store_true",
                         help="plan the main grid only")
     parser.add_argument("--full-plan", action="store_true",
-                        help="plan the JOB38 P0-P3 full cross")
+                        help="plan the P0-P3 full cross")
     parser.add_argument("--pattern", action="append", default=[],
                         choices=list(PATTERN_DISPLAY),
                         help="organization pattern to plan (repeatable; default P0_BASE)")

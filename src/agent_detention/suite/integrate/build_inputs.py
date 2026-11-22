@@ -160,8 +160,13 @@ def build_overlay(tier1: list[dict], tier2_text: dict, source_sha: str) -> dict:
     return body
 
 
-def build_all() -> dict[str, str]:
-    """Return {relative path: file text} for every output."""
+def build_all(*, check: bool = False) -> tuple[dict[str, str], str | None]:
+    """Return ({relative path: file text} for every output, the source file's text before the build or None).
+
+    The manifest build reads the source file from disk by path, so it is written first.  With ``check`` the
+    tree is left as it was found, also when the build fails: the previous source file is put back, or the new
+    one removed (with the output folders, if the build created them).
+    """
     from vera.delegation.condition_manifest import build_condition_manifest
     from vera.delegation.evidence import PROTOCOL_V14
 
@@ -169,31 +174,45 @@ def build_all() -> dict[str, str]:
     tier2 = json.loads((paths.tier2_out() / "tau2_mechanisms.json").read_text())["mechanisms"]
     tier2_text = json.loads((paths.tier2_out() / "tau2_case_text.json").read_text())
     source_text = dump(build_source(tier1, tier2))
+    made_dirs = [d for d in (OUT_DIR, *OUT_DIR.parents) if not d.exists()]  # deepest first
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     source_path = TREE / SOURCE_REL
-    existing = source_path.read_text() if source_path.is_file() else None
-    source_path.write_text(source_text)  # the manifest build reads it from disk by path
-    identity = source_identity(source_path)
-    conditions = build_condition_manifest(source=identity, protocol=PROTOCOL_V14)
-    overlay = build_overlay(tier1, tier2_text, identity["sha256"])
-    return {
-        SOURCE_REL: source_text,
-        CONDITIONS_REL: dump(conditions),
-        OVERLAY_REL: dump(overlay),
-        "_previous_source": existing or "",
-    }
+    previous = source_path.read_text() if source_path.is_file() else None
+    source_path.write_text(source_text)
+    try:
+        identity = source_identity(source_path)
+        conditions = build_condition_manifest(source=identity, protocol=PROTOCOL_V14)
+        overlay = build_overlay(tier1, tier2_text, identity["sha256"])
+    finally:
+        if check:
+            if previous is None:
+                source_path.unlink(missing_ok=True)
+                for d in made_dirs:
+                    d.rmdir()
+            else:
+                source_path.write_text(previous)
+    outputs = {SOURCE_REL: source_text, CONDITIONS_REL: dump(conditions), OVERLAY_REL: dump(overlay)}
+    return outputs, previous
+
+
+def stale(outputs: dict[str, str], previous_source: str | None) -> list[str]:
+    """The outputs whose file is missing or differs; the source file is compared as it was before the build."""
+    bad = []
+    for rel, text in outputs.items():
+        path = TREE / rel
+        current = previous_source if rel == SOURCE_REL else (path.read_text() if path.is_file() else None)
+        if current != text:
+            bad.append(rel)
+    return bad
 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true")
     args = ap.parse_args()
-    outputs = build_all()
-    previous = outputs.pop("_previous_source")
+    outputs, previous = build_all(check=args.check)
     if args.check:
-        bad = [rel for rel, text in outputs.items() if not (TREE / rel).is_file() or (TREE / rel).read_text() != text]
-        if previous and previous != outputs[SOURCE_REL]:
-            (TREE / SOURCE_REL).write_text(previous)
+        bad = stale(outputs, previous)
         print("STALE: " + ", ".join(bad) if bad else "ok: suite inputs match a rebuild")
         return 1 if bad else 0
     for rel, text in outputs.items():

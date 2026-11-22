@@ -1,4 +1,4 @@
-"""Organisation-pattern factor for the v1.2 delegation harness (JOB21, OPTIONAL).
+"""Organisation-pattern factor for the v1.2 delegation harness (OPTIONAL).
 
 Selecting a pattern is an explicit opt-in: ``pattern=None`` (or ``P0_BASE``) is the base
 v1.2 design, byte for byte.  The package holds

@@ -1,6 +1,6 @@
-"""JOB55: bind the runner to the one validated, frozen source and assignment.
+"""Bind the runner to the one validated, frozen source and assignment.
 
-Astra's final review finding 1 (``REVIEW_V13B_FINAL.md``) showed that ``GridRunner`` executed
+The independent final review, finding 1 (``REVIEW_V13B_FINAL.md``) showed that ``GridRunner`` executed
 set-10 instances while the D1 resolver selected the owner-reviewed set 12.  This module makes
 that impossible:
 
@@ -11,7 +11,7 @@ that impossible:
 * the condition manifest is rebuilt from those bytes and its ``manifest_digest`` must equal
   the preregistered ``condition_manifest_digest``,
 * the full main assignment table is rebuilt from that manifest and its digest must equal the
-  frozen set-12 assignment record (whose digest is anchored to pre-JOB55 dry-run evidence).
+  frozen set-12 assignment record (whose digest is anchored to earlier dry-run evidence).
 
 Nothing here edits a mechanism, declaration, condition manifest or preregistration row.  A
 fallback to set 10/11, an omitted pattern level, a partial table or a stale digest is a hard
@@ -316,7 +316,7 @@ def load_frozen_assignment(path: str | Path | None = None) -> dict:
             raise SourceBindingError("frozen assignment evidence hash does not verify")
         if _hex64(evidence.get("assignment_digest")) != digest:
             raise SourceBindingError(
-                "frozen assignment digest disagrees with its recorded pre-JOB55 evidence"
+                "frozen assignment digest disagrees with its recorded earlier evidence"
             )
     return {**data, "path": str(target), "file_sha256": sha256_file(target)}
 

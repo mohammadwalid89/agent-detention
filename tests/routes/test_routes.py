@@ -114,6 +114,23 @@ def test_error_kinds(status, error_type, kind):
     assert len(transport.requests) == 1  # only transport errors are retried here
 
 
+@pytest.mark.parametrize(
+    "status, body, kind",
+    [
+        (401, "Unauthorized", ERROR_AUTH_EXPIRED),
+        (403, "<html><body>Forbidden</body></html>", ERROR_AUTH_EXPIRED),
+        (429, "<html><body>Too Many Requests</body></html>", ERROR_ROUTE_LIMIT),
+        (502, "<html><body>Bad Gateway</body></html>", ERROR_TRANSPORT),
+    ],
+)
+def test_error_kinds_for_a_body_that_is_not_json(status, body, kind):
+    # A gateway answering in HTML or plain text: auth failures and limits stop at once.
+    transport = FakeTransport((status, body))
+    result = adapter(transport).complete(MESSAGES)
+    assert result.error_kind == kind and not result.ok
+    assert len(transport.requests) == (2 if kind == ERROR_TRANSPORT else 1)
+
+
 def test_transport_error_retried_once():
     transport = FakeTransport((529, {"type": "error", "error": {"type": "overloaded_error", "message": "busy"}}))
     a = adapter(transport)

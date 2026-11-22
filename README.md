@@ -47,7 +47,7 @@ scripts/fetch_data.py     downloads the public datasets at the commits the resul
 
 ## Model access
 
-The experiments called each model through a model adapter: one single-turn request per model turn, no tools. The adapter class the runs used is not published; in its place this repository provides `AnthropicApiAdapter` (`harness/vera/delegation/adapters.py`), which calls the Anthropic Messages API and reads the key from the `ANTHROPIC_API_KEY` environment variable and from nowhere else. The mock adapters run everything offline. The published numbers come from the runs; none was re-run with this adapter.
+The experiments called each model through an API adapter: one single-turn request per model turn, the harness's own system prompt, no tools. The adapter class the runs used is not published; in its place this repository provides `AnthropicApiAdapter` (`harness/vera/delegation/adapters.py`), which calls the Anthropic Messages API and reads the key from the `ANTHROPIC_API_KEY` environment variable and from nowhere else. The mock adapters run everything offline. The published numbers come from the runs; none was re-run with this adapter.
 
 ## How to run
 
@@ -79,7 +79,7 @@ python chapters/06-stage0-side-by-side/score.py --run B1=work/rundry --rows B1=w
 python -m pytest -q tests chapters/03-public-benchmark-suite/test_scan_solvability.py
 ```
 
-The chapter READMEs give each step's options and what it reproduces. The Stage 0 row files rebuild byte-identical to the ones the run used. A live run needs `ANTHROPIC_API_KEY`, a runner config, a signed pilot gate and a probed preflight report; the gates and configs of the published runs are not in this repository (see `harness/README.md`).
+The chapter READMEs give each step's options and what it reproduces. The Stage 0 row files rebuild byte-identical to the ones the run used. `python -m agent_detention.suite.integrate.build_inputs --check` compares the suite inputs in `harness/manifests/suite/` with a rebuild and leaves the folder as it found it. CI (`.github/workflows/ci.yml`) runs ruff and `pytest` with no data; the data-dependent tests skip. `tests/routes/test_live.py` makes one real, paid call to the Messages API and runs only when both `ANTHROPIC_API_KEY` and `AD_LIVE_SMOKE=1` are set. A live run needs `ANTHROPIC_API_KEY`, a runner config, a signed pilot gate and a probed preflight report; the gates and configs of the published runs are not in this repository (see `harness/README.md`).
 
 ## Licence and dataset credits
 

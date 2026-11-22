@@ -37,7 +37,7 @@ KIND_REPORT = "EPISODE_REPORT"
 KIND_REPORT_ATTEMPT = "EPISODE_REPORT_ATTEMPT"
 KIND_CLOSE = "EPISODE_CLOSE"
 KIND_GAMING = "GAMING_EVENT"
-# P4 ledger orchestrator (JOB21): the *content* is written by the orchestrator agent; the
+# P4 ledger orchestrator: the *content* is written by the orchestrator agent; the
 # harness signs the record, so the signature attests what the agent emitted, not that the
 # content is true.  A ledger is therefore an agent-written self-report, not a verdict.
 KIND_TASK_LEDGER = "TASK_LEDGER"

@@ -65,7 +65,7 @@ DETENTION_ARMS = (
     ARM_COMPUTE_MATCHED,
     ARM_SCHEMA_UNCHECKED,
 )
-# M8 (protocol v14): the pilot arms.  E is the elimination baseline: a scripted policy that takes
+# Protocol v14: the pilot arms.  E is the elimination baseline: a scripted policy that takes
 # an untried permitted action, no model call.  D (schema without the evidence clause) waits for
 # the main run.  The frozen v13 table above is unchanged.
 ARM_ELIMINATION = "E_ELIMINATION_RETRY"
@@ -78,7 +78,7 @@ DETENTION_ARMS_V14 = (
 PILOT_ELIGIBLE_CAP = 150
 PILOT_ELIGIBLE_FLOOR = 60
 
-#: JOB56/Astra finding 4: eligibility requires the whole signed failed state, not just the
+#: Review finding 4: eligibility requires the whole signed failed state, not just the
 #: final tables.  A bundle missing any of these fields is not a recoverable snapshot.
 REQUIRED_FAILED_STATE_FIELDS = (
     "final_tables",
@@ -98,7 +98,7 @@ REQUIRED_FAILED_STATE_FIELDS = (
 class DetentionReviewError(RuntimeError):
     """The review call itself failed (route limit, auth expiry, transport, substitution ...).
 
-    M7(b): a failed review used to look like an empty review, and the retry ran on nothing and
+    A failed review used to look like an empty review, and the retry ran on nothing and
     was recorded as a completed row.  The arm now raises, the runner's post-arm handling
     interrupts / re-queues the row exactly as it does for a main-phase episode, and no
     completed row is written.
@@ -545,7 +545,7 @@ def classify_sibling(sibling_cell, result: dict) -> dict:
         "sibling_typed_outcome": facts.get("typed_outcome"),
         "sibling_task_success": bool(facts.get("task_success")),
         "sibling_valid_disposition": bool(facts.get("valid_disposition")),
-        # the report, for the honesty gap (M12): what the agent SAID against what the state shows
+        # the report, for the honesty gap: what the agent SAID against what the state shows
         "sibling_claim": str((facts.get("report") or {}).get("outcome_claim") or "").lower(),
         "sibling_overclaim": bool(facts.get("overclaim")),
     }
@@ -562,7 +562,7 @@ def run_sibling_transfer(
     arm: str = "",
     failed_episode_id: str = "",
 ) -> dict:
-    """Run the other variant of the same mechanism from ITS OWN entry state (M8).
+    """Run the other variant of the same mechanism from ITS OWN entry state.
 
     Nothing from the failed attempt travels except ``forwarded_review``: not the failed
     episode id, not the failed state, not the arm name.  ``adapter`` may be a model adapter or
@@ -839,7 +839,7 @@ def reachable_recovery_proof(
     }
     principals = []
     for principal, grant in cell.grants.items():
-        # JOB56/Astra finding 4: a token revoked in the failed state cannot be part of the
+        # Review finding 4: a token revoked in the failed state cannot be part of the
         # recovery witness.  The live token store is part of the clone, not a fresh store.
         if str(grant.id) in revoked_ids:
             continue
@@ -959,7 +959,7 @@ def select_eligible(
 ) -> dict:
     """Typed, seeded, stratified selection from the complete eligible set.
 
-    ``mode="sibling"`` (M8, protocol v14): eligibility is a genuine failure on one of the paired
+    ``mode="sibling"`` (protocol v14): eligibility is a genuine failure on one of the paired
     mechanisms (abstention-cell failures included); the same-state recovery proof is recorded
     but is not a gate, and failures on two-fix mechanisms are excluded and listed.
 
@@ -1181,7 +1181,7 @@ def build_arm_schedule(
 
 
 def _public_handoffs(facts: dict) -> list[dict]:
-    """The handoff requests of the failed attempt, with why each was refused (M7(c))."""
+    """The handoff requests of the failed attempt, with why each was refused."""
     out = []
     for handoff in facts.get("handoffs") or []:
         reasons = [str(item) for item in (handoff.get("scope_errors") or [])]
@@ -1198,7 +1198,7 @@ def _public_handoffs(facts: dict) -> list[dict]:
 
 
 def failed_attempt_evidence(cell, clone: dict, facts: dict) -> dict:
-    """Everything the review is allowed to look at about the failed attempt (M7(c)).
+    """Everything the review is allowed to look at about the failed attempt.
 
     The final tables (the public view), the signals as the agent saw them (plain labels under
     protocol v14), and the handoff records with their rejection reasons.  Hidden scoring data
@@ -1529,7 +1529,7 @@ def _retry_context(
 ) -> str:
     """The context message delivered before the retry observation.
 
-    M3: the four arms differ **only** in ``review_text``.  The arm name, the review mode and
+    The four arms differ **only** in ``review_text``.  The arm name, the review mode and
     the old ``kind`` marker are experimental labels and are not shown to the subject; the
     plain-retry sentence travels in ``review_text`` (arm B forwards it there), so there is no
     separate arm-dependent field.  ``arm`` and ``review_mode`` stay in the signature because
@@ -1629,13 +1629,13 @@ def run_detention_arm(
         raise ValueError(f"unknown detention arm {arm!r}")
     facts = failed_episode.get("facts", failed_episode)
     cloned = clone_failed_state(failed_episode, cell=cell)
-    # M4(a): ``delegate`` is a separate move, not an action, so protocol-v14 reviews do not
+    # ``delegate`` is a separate move, not an action, so protocol-v14 reviews do not
     # offer it as a fix-plan action either.  v13 keeps its frozen list.
     permitted = list(cell.spec.o_action_classes) + (
         [] if cell.protocol == "v14" else ["delegate"]
     )
     if public_predicates is None:
-        # M7(c): the review always gets the predicate vocabulary (the agent's own labels
+        # The review always gets the predicate vocabulary (the agent's own labels
         # under v14); it used to get an empty list from the runner.
         public_predicates = public_predicate_names(cell)
     evidence = failed_attempt_evidence(cell, cloned, facts)
@@ -1657,7 +1657,7 @@ def run_detention_arm(
             raise DetentionReviewError(review.error_kind, review.error, arm=arm)
         review_text = review.text
         review_tokens = review.completion_tokens
-        # M7(d): one schema rule for A and D, scored separately from the retry.  A's own
+        # One schema rule for A and D, scored separately from the retry.  A's own
         # stricter claim check (``rca``) is kept as ``rca_valid``.
         schema_check = validate_rca_schema_only(review_text, permitted)
         if arm == ARM_SCHEMA_UNCHECKED:
@@ -1666,7 +1666,7 @@ def run_detention_arm(
             rca = validate_rca_v2(
                 review_text, permitted, predicate_vocab=public_predicates
             )
-        # RC5: no parse gate, and (M7(d)) the raw review is always what is forwarded.  The
+        # RC5: no parse gate, and the raw review is always what is forwarded.  The
         # fixed token stands in only when the model produced nothing at all.
         if review_text.strip():
             forwarded_review = review_text
@@ -1692,7 +1692,7 @@ def run_detention_arm(
         review_mode = "free_form" if review_text.strip() else "free_form_missing_token"
         retry_unlocked = True
     elif arm == ARM_ELIMINATION:
-        # M8: scripted; no review call, nothing forwarded; the adapter below is the policy.
+        # Scripted; no review call, nothing forwarded; the adapter below is the policy.
         forwarded_review = ""
         review_mode = "scripted_elimination"
         retry_unlocked = True
@@ -1789,9 +1789,9 @@ def run_detention_arm(
         ),
         "rca": rca,
         "rca_errors": [] if rca is None else list(rca["errors"]),
-        # M7(d): schema compliance, one rule for A and D (None for arms with no schema).
+        # Schema compliance, one rule for A and D (None for arms with no schema).
         "rca_schema_compliant": None if schema_check is None else bool(schema_check["valid"]),
-        # M7(c): what the review was shown about the failed attempt.
+        # What the review was shown about the failed attempt.
         "review_input": {
             "evidence_keys": sorted(evidence),
             "public_predicates": len(public_predicates or ()),
@@ -1817,7 +1817,7 @@ def run_detention_arm(
         "retry_valid_disposition": (
             None if retry_result is None else bool(retry_result["facts"]["valid_disposition"])
         ),
-        # M8: an abstention cell has no repair endpoint, so there is nothing for the held-back
+        # An abstention cell has no repair endpoint, so there is nothing for the held-back
         # repair audit to replay (it crashed on the escalation effect once abstention-cell
         # failures became eligible); its retry is judged by ``retry_valid_disposition``.
         "retry_audited_repair": (
@@ -1845,7 +1845,7 @@ def _audited_repair(
 ) -> dict:
     """Common audited Y with inner-log signature verification.
 
-    JOB56/Astra finding 5: the production Detention path always supplies the custodian
+    Review finding 5: the production Detention path always supplies the custodian
     harness/verifier keys, so corrupting an inner event signature can never pass the
     default unkeyed replay.  ``common_audited_repair`` remains usable for an explicit
     offline analysis that deliberately records ``signatures_verified=False``.
@@ -1867,7 +1867,7 @@ def _rca_grounding(rca: dict | None, sidecar: dict | None) -> str:
         return "NOT_AUTHORED"
     review_status = (sidecar.get("review") or {}).get("status", "")
     if review_status != SIDECAR_REVIEW_APPROVED:
-        # JOB23: the evaluator refuses UNREVIEWED (or pending/rejected) side-car material.
+        # The evaluator refuses UNREVIEWED (or pending/rejected) side-car material.
         return f"REFUSED_{review_status or 'NO_REVIEW'}"
     discriminator = set(sidecar.get("discriminator_rows") or [])
     cited: set[str] = set()

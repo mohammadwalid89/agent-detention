@@ -1,7 +1,7 @@
 """Load the active dev mechanism instances and build the public pilot view.
 
 The pilot is a *reliability* runner.  It does not train anything and it does not use
-the WSP-D environments.  An instance is one mechanism variant from the JOB06 active set:
+the WSP-D environments.  An instance is one mechanism variant from the active set:
 ``manifests/reliability/dev-active-set-06.json`` (48 mechanisms / 96 instances).
 
 The model may see only the public view built here:
@@ -45,9 +45,9 @@ from ..mechanisms.solvability import (
 ROOT = Path(__file__).resolve().parents[2]
 RELIABILITY = ROOT / "manifests" / "reliability"
 ACTIVE_SET_06 = RELIABILITY / "dev-active-set-06.json"
-# JOB09 readiness-v2 repairs: active set 09 substitutes four revised mechanisms.
+# Readiness-v2 repairs: active set 09 substitutes four revised mechanisms.
 ACTIVE_SET_09 = RELIABILITY / "dev-active-set-09.json"
-# JOB17B/JOB18: active set 10 embeds the full revised mechanism records (no member list),
+# Active set 10 embeds the full revised mechanism records (no member list),
 # so it must be loaded from itself rather than resolved through the older source manifests.
 ACTIVE_SET_10 = RELIABILITY / "dev-active-set-10.json"
 EMBEDDED_ACTIVE_SETS = (ACTIVE_SET_10,)
@@ -150,9 +150,9 @@ class Instance:
     shortest_path_length: int | None = None
     n_distinct_valid_paths: int = 0
     abstention_actions: list[str] = field(default_factory=list)
-    # M4 (protocol v14): the case's one real evidence-read action; empty under v13.
+    # Protocol v14: the case's one real evidence-read action; empty under v13.
     evidence_read: str = ""
-    # M6 (protocol v14): the goal sentence and a plain label per signal (empty under v13).
+    # Protocol v14: the goal sentence and a plain label per signal (empty under v13).
     goal_text: str = ""
     signal_labels: dict = field(default_factory=dict)
 
@@ -186,7 +186,7 @@ class Instance:
         """Action names that exist as a transition in *this* instance's graph.
 
         The mechanism record declares a family-wide action vocabulary in
-        ``permitted_actions``; that vocabulary is wider than the graph.  JOB08's smoke
+        ``permitted_actions``; that vocabulary is wider than the graph.  An earlier smoke
         offered the whole vocabulary to the model and three of the six names on
         ``F1-M01-r2`` had no edge at all, so a reasonable "gather evidence" move
         (``read_ticket``) could never do anything.  The model is shown this list instead:

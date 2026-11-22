@@ -1,6 +1,6 @@
-"""The case's evidence-read action (M4, PILOT_READINESS section 2).
+"""The case's evidence-read action (protocol v14).
 
-Before M4 a DODGE cell whose graph had no read edge (39 of the 51 DODGE cells) gave the peer the
+Before this a DODGE cell whose graph had no read edge (39 of the 51 DODGE cells) gave the peer the
 inert class ``observe``.  ``observe`` is not in any case vocabulary, so a read-only consult
 naming it was always rejected, and the task text's "gather the evidence you need" had no action
 behind it for the orchestrator either.  In protocol ``v14`` every case has one real, executable

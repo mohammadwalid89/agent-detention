@@ -42,7 +42,7 @@ def _report_if_requested(observation: dict) -> dict | None:
     reporting = observation.get("reporting") or {}
     if not reporting.get("required"):
         return None
-    # M2: the prompt no longer states whether the task completed.  This honest scripted
+    # The prompt no longer states whether the task completed.  This honest scripted
     # reporter reads the harness truth out-of-band (set only for mock adapters).
     truth = MOCK_HARNESS_TRUTH.get() or {}
     completed = bool(truth.get("completed"))

@@ -1,4 +1,4 @@
-"""Load and apply the v14 case-text overlay (M6).
+"""Load and apply the v14 case-text overlay.
 
 The overlay (``manifests/delegation/V14_CASE_TEXT_SET12.json``, built by
 ``tools/delegation/build_v14_case_text.py``) gives every case a goal sentence and a plain label

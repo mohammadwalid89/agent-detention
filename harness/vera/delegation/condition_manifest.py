@@ -318,7 +318,7 @@ def build_condition_manifest(
         ],
     }
     if protocol != PROTOCOL_V13:
-        # M4: bound only for a non-v13 protocol, so the preregistered v13 digest is unchanged.
+        # Bound only for a non-v13 protocol, so the preregistered v13 digest is unchanged.
         payload["protocol"] = protocol
     payload["manifest_digest"] = sha256_text(canonical_json(payload))
     return payload

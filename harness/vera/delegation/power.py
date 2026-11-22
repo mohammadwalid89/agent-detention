@@ -1,4 +1,4 @@
-"""JOB38 RC7/F9: prospective power for the actual v1.3 assignment and four-test family.
+"""RC7/F9: prospective power for the actual v1.3 assignment and four-test family.
 
 This module replaces the earlier ``fraction(diff >= 0.15)`` statistic with
 
@@ -46,7 +46,7 @@ NO_DELEGATION_UTILITY = 0.30
 
 DEFAULT_VARIANCE_BOUNDARY = ("DEGENERATE_ZERO_VARIANCE_P_VALUE_ONE",)
 
-#: JOB46: the owner raised the Detention cap.  A repeated retry of the same failed state is
+#: The owner raised the Detention cap.  A repeated retry of the same failed state is
 #: not an independent observation, so the default within-failure ICC is the same declared
 #: ICC (0.20).  The cap study reports repeats at 0.0/0.20 so the assumption is visible.
 DEFAULT_WITHIN_FAILURE_ICC = 0.20
@@ -169,7 +169,7 @@ def _own_matrix(permutation_index: int) -> np.ndarray:
 def label_exposures(rows, *, lineage_by_instance: dict[str, str] | None = None) -> dict:
     """Build tensor inputs for the label simulation from real assignment rows.
 
-    Only randomized ``SWAPPED`` OPTIONAL rows enter the headline (JOB36 semantics).  A row
+    Only randomized ``SWAPPED`` OPTIONAL rows enter the headline.  A row
     contributes one observation per fixed backend slot: whether the slot carried an
     own-publisher label and whether the orchestrator selected that slot.
     """
@@ -273,7 +273,7 @@ def _cluster_estimator(values: np.ndarray, codes: np.ndarray, n_clusters: int) -
             "se": 0.0,
             "df": n - 1,
             "t": float("inf") if estimate != 0 else 0.0,
-            # JOB56/Astra finding 7: the predeclared degenerate boundary is p=1 for every
+            # Review finding 7: the predeclared degenerate boundary is p=1 for every
             # estimate, not a data-dependent p=0.  The flag, not the p value, carries the
             # fact that the variance is degenerate.
             "p_value": 1.0,
@@ -466,7 +466,7 @@ def _label_replicate(
     se = math.sqrt(variance) if variance > 0 else 0.0
     df = min(model_dfs) if model_dfs else 0
     if se == 0.0:
-        # JOB56/Astra finding 7: same rule in the aggregate/per-model path.
+        # Review finding 7: same rule in the aggregate/per-model path.
         p_value = 1.0
         boundary = DEFAULT_VARIANCE_BOUNDARY[0]
     else:
@@ -499,7 +499,7 @@ def _detention_replicate(
     ``repeats_per_failure`` is the number of identical retry opportunities per selected
     failed state and arm.  A repeated retry shares the failed state, so it also shares a
     failure-level intercept with the declared ``within_failure_icc`` (default: the same
-    ICC).  With the default ``repeats_per_failure=1`` this is the JOB38 paired design and
+    ICC).  With the default ``repeats_per_failure=1`` this is the paired design and
     the random stream is unchanged.
 
     ``failure_clusters`` optionally supplies the construction-lineage codes of the
@@ -655,7 +655,7 @@ def simulate_failure_yield(
     }
 
 
-# Detention cap study (JOB46 owner decision: raise F to adequate power)
+# Detention cap study (owner decision: raise F to adequate power)
 def wilson_lower_bound(successes: int, trials: int, z: float = 1.96) -> float:
     """95% Wilson score lower bound for a simulated rejection rate."""
     if trials <= 0:
@@ -892,7 +892,7 @@ def detention_subgroup_power(
 ) -> dict:
     """Power for a predeclared Detention *subgroup* family at one sample size.
 
-    JOB49's chain-depth moderator asks for the paired A-B and A-C contrasts **within** a
+    The chain-depth moderator asks for the paired A-B and A-C contrasts **within** a
     level, not the confirmatory four-test family.  This function simulates exactly that
     secondary family: the selected contrasts (default A-B and A-C) receive Holm correction
     within the level at ``alpha``.  It is the same paired four-arm generative model and the

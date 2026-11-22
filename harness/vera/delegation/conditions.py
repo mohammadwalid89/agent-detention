@@ -108,7 +108,7 @@ class Derivation:
     conditions: dict
     dodge_variants: dict
     fingerprint: str
-    # M4: the protocol this derivation was made under and, under v14, the evidence-read action.
+    # The protocol this derivation was made under and, under v14, the evidence-read action.
     protocol: str = PROTOCOL_V13
     evidence_read: str = ""
 
@@ -319,7 +319,7 @@ def derive_conditions(
 ) -> Derivation:
     """Pure derivation of the four condition envelopes for one frozen instance.
 
-    ``protocol="v13"`` is the frozen derivation (its digest is preregistered).  ``"v14"`` (M4)
+    ``protocol="v13"`` is the frozen derivation (its digest is preregistered).  ``"v14"``
     adds the case's real evidence-read action to every envelope that may read, and replaces the
     DODGE peer's inert ``observe`` class with it.
     """
@@ -366,7 +366,7 @@ def derive_conditions(
             _resources_for(all_actions, resource_map),
         )
         if protocol == PROTOCOL_V14:
-            # M4: a read-only peer holds a real read action of the case, with the resources
+            # A read-only peer holds a real read action of the case, with the resources
             # that action actually touches (not the repair endpoint).
             dodge_peer = readable if readable else (evidence_read,)
             dodge_resources = _resources_for(dodge_peer, resource_map)
@@ -516,7 +516,7 @@ def task_text_for(instance: Instance, spec: ConditionSpec) -> str:
     return base
 
 
-# JOB26 v1.3 compatibility surface
+# v1.3 compatibility surface
 def condition_reachability(instance: Instance, condition: str, *, cue: str | None = None) -> dict:
     """Constructive reachability proof for one derived condition (RC2)."""
     from .reachability import classify_by_reachability

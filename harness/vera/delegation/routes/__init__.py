@@ -1,4 +1,4 @@
-"""JOB25 route registry (D4) and the route preflight.
+"""Route registry (D4) and the route preflight.
 
 Importing this package does not read a key or make a network call.
 """

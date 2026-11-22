@@ -1,17 +1,17 @@
-"""JOB50: freeze the L3 multi-agent extension block before any main-grid outcome.
+"""Freeze the L3 multi-agent extension block before any main-grid outcome.
 
 The main set-12 grid has only four L3 construction lineages and twenty claimed L3
-condition cells (JOB49).  The owner therefore declared a prospective **L3 multi-agent
+condition cells.  The owner therefore declared a prospective **L3 multi-agent
 extension** that is authored after the public breadth research, reviewed by the owner and
-by Astra, sealed, and run after the main grid this sprint.  This module freezes that plan
+by the independent reviewer, sealed, and run after the main grid this sprint.  This module freezes that plan
 now, while no main-grid outcome exists.
 
 What is frozen here (never chosen after an outcome):
 
 * the target: **>= 10 L3 lineage clusters and >= 30 L3 claimed condition cells** for the
   main grid plus the extension combined, with the exact additional requirement derived
-  from the frozen JOB49 counts;
-* the authoring/review/run order: breadth research -> authoring -> owner review -> Astra
+  from the frozen counts;
+* the authoring/review/run order: breadth research -> authoring -> owner review -> independent
   review -> review sheets -> seal -> outcomes opened -> extension run after the main grid;
 * blindness: the extension is selected without opening any main-grid outcome.  If the
   writing, sheets and seal cannot be completed before the first main outcome is opened,
@@ -46,13 +46,13 @@ CHAIN_DEPTH_PATH = ROOT / "manifests" / "delegation" / "V13_CHAIN_DEPTH.json"
 RUN_PLAN_PATH = ROOT / "manifests" / "delegation" / "V13_RUN_PLAN.json"
 
 KIND = "vera.v13_l3_multi_agent_extension.v1"
-VERSION = "JOB50-2026-11-15"
+VERSION = "2026-11-15"
 LEVEL = "L3"
 PREREG_VERSION_ID = "V13-PREREG-6"
 RESEARCH_REQUIRED = "vera-research-breadth-20261114"
 AUTHORING_STAGE = "L3_EXTENSION_AUTHORING_AND_SEAL_BEFORE_MAIN_OUTCOMES"
 
-#: Both targets are the already-frozen JOB49 minimum cell sizes; JOB50 binds them
+#: Both targets are the already-frozen minimum cell sizes; this module binds them
 #: explicitly to the L3 extension rather than inventing a new threshold.
 MINIMUM_LINEAGE_CLUSTERS = int(MINIMUM_CELL_SIZE["lineage_clusters_per_level"])
 MINIMUM_CLAIMED_CONDITION_CELLS = int(MINIMUM_CELL_SIZE["family_condition_level_cells"])
@@ -97,7 +97,7 @@ def build_l3_extension_declaration(
 ) -> dict:
     """Return the frozen L3 extension declaration.
 
-    Deterministic in the frozen run plan and the JOB49 counts: rebuilding on the same
+    Deterministic in the frozen run plan and the frozen counts: rebuilding on the same
     bytes returns the same digest.  The extension case ids are deliberately absent (they
     are bound at ``AUTHORING_STAGE`` after the breadth research).
     """
@@ -127,7 +127,7 @@ def build_l3_extension_declaration(
             "research_must_complete_first": True,
             "authored_from_public_breadth_research": True,
             "owner_reviewed": True,
-            "astra_reviewed": True,
+            "independently_reviewed": True,
             "review_sheets_required": True,
             "run_order": "AFTER_MAIN_GRID_THIS_SPRINT",
             "sequence": [
@@ -136,7 +136,7 @@ def build_l3_extension_declaration(
                 "extension cases authored from the breadth research "
                 "(no main-grid outcome opened)",
                 "owner review bound to the exact extension bytes",
-                "Astra review bound to the exact extension bytes",
+                "independent review bound to the exact extension bytes",
                 "review sheets completed for every extension case",
                 "extension sealed (hash-bound) before the first main-grid outcome is "
                 "opened",
@@ -265,7 +265,7 @@ def build_l3_extension_declaration(
                 f"{RESEARCH_REQUIRED} complete",
                 "extension authored",
                 "owner review complete",
-                "Astra review complete",
+                "independent review complete",
                 "review sheets complete",
                 "extension sealed",
             ],

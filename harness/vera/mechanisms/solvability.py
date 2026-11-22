@@ -1,4 +1,4 @@
-"""Exhaustive solvability analysis of a mechanism's executable transition graph (JOB05).
+"""Exhaustive solvability analysis of a mechanism's executable transition graph.
 
 Why this exists
 ---------------
@@ -26,14 +26,14 @@ A complete path is a **valid fix** unless one of these holds:
 
 ``forbidden_action``
     A step's action is listed in the record's ``forbidden_actions``.  This field is declared
-    explicitly by JOB05 records.  Older records do not bind their outcome-level
+    explicitly by newer records.  Older records do not bind their outcome-level
     ``forbidden_side_effects`` names to actions, so for them this channel is empty -- that gap
     is reported per record as ``forbidden_action_channel: "not_declared"`` and must be read as
     a limitation, not as a pass.
 ``abstention_completes``
     The step that makes the required postconditions true is an abstain-class action
     (``abstain`` / ``escalate`` / ``request_approval``): escalation scored as resolution, the
-    JOB04 ``D2`` defect.  Such a path is not a fix.
+    ``D2`` defect.  Such a path is not a fix.
 
 Labelling
 ---------
@@ -54,7 +54,7 @@ Each instance gets exactly one label:
 A mechanism is a *labelled negative control* when it declares ``negative_control`` (a new
 optional field) and no instance is ``SOLVABLE``.  A negative control whose other instance is
 solvable keeps its "no reference policy passes both instances" character and stays a negative
-control instance; JOB05 records declare which instance is the intentional one.
+control instance; newer records declare which instance is the intentional one.
 
 This module imports the private execution helpers from :mod:`vera.mechanisms.readiness` on
 purpose: the solvability search must execute declarations exactly as the readiness check does,
@@ -163,7 +163,7 @@ def analyse_instance(mechanism: dict, variant: dict, *, max_depth: int = MAX_DEP
         result["notes"].append(f"entry node {entry!r} is not in the graph")
         return result
 
-    # Every predicate the instance or the graph uses must have a DB definition.  JOB04's
+    # Every predicate the instance or the graph uses must have a DB definition.  The lazy-audit rule's
     # readiness check only required *one* executable variant, so a variant that activated an
     # unregistered predicate passed silently; the solvability search refuses to guess and
     # labels that instance UNEXECUTABLE instead.

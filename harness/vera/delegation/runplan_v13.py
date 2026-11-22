@@ -4,12 +4,12 @@ No adapter is constructed, no key is read and no model or network call is made. 
 assignment table is exact for the frozen design; the simulation is a pre-run design study
 over declared plausible rates and ICCs, not a result and not a power certificate.
 
-JOB38 adds the owner-selected P1-P3 organisation patterns as an **exact full cross** with
+This adds the owner-selected P1-P3 organisation patterns as an **exact full cross** with
 every base row (P0_BASE + P1_ORCHESTRATOR_WORKER + P2_MANAGER_AGENTS_AS_TOOLS +
 P3_HANDOFF_DECENTRALISED), prices the extra peer->peer delegation decision of P3, and
-recomputes the resource envelope including the real terminal-report call (JOB35), the
+recomputes the resource envelope including the real terminal-report call, the
 single infrastructure retry and worst-case process attempts.  The base-grid keys are kept
-so the frozen JOB29 state-machine reconciliation remains exact; every enrolled quantity is
+so the frozen state-machine reconciliation remains exact; every enrolled quantity is
 labelled with its scope.
 """
 
@@ -69,7 +69,7 @@ PATTERN_DISPLAY = {
 
 #: Frozen per-turn state machine maxima.  These are model calls per episode, including the
 #: single delegation call, the one zero-step peer terminal reply and the one real terminal
-#: report call (JOB35 replaced the synthesized report with that call).  They are duplicated
+#: report call (it replaced the synthesized report).  They are duplicated
 #: here as plan constants so this module stays import-light; tests assert that they agree
 #: with ``vera.delegation.budget.state_machine``.
 MAIN_MAX_CALLS_PER_EPISODE = 9
@@ -94,7 +94,7 @@ DETENTION_RETRY_MAX_CALLS_ENROLLED = max(
 #: attempt; model failure, route limit, auth expiry, config and missing-key errors are not retried.
 INFRA_RETRY_ATTEMPTS_PER_CALL = 2
 
-#: JOB29's declared calibration and probe planning blocks.  They are not state-machine
+#: The declared calibration and probe planning blocks.  They are not state-machine
 #: bounds; the route protocol binds them before the first route call.
 CALIBRATION_INSTANCES_PER_ROUTE = 12
 CALIBRATION_ROUTES = 5
@@ -103,8 +103,8 @@ CALIBRATION_AVG_CALLS_PER_EPISODE = 4
 CALIBRATION_UPPER_CALLS_PER_EPISODE = 6
 PROBE_CALLS_PER_ROUTE = 1
 
-DETENTION_CAP_BASE = 120  # preserved JOB29/JOB38 state-machine core (base keys)
-#: JOB46 owner decision (13:28 PT): raise the Detention cap so A-B and A-C are adequately
+DETENTION_CAP_BASE = 120  # preserved state-machine core (base keys)
+#: Owner decision (13:28 PT): raise the Detention cap so A-B and A-C are adequately
 #: powered.  The cap is frozen in V13-PREREG-4 before any main-grid outcome; selection binds
 #: at AFTER_INITIAL_GRID_BEFORE_DETENTION_RETRY.
 DETENTION_CAP = 660
@@ -135,7 +135,7 @@ def _seed(*parts) -> int:
 def _first_per_family(instances: list[dict], limit: int) -> list[dict]:
     """Deterministic round-robin over sorted families, then sorted ids inside a family.
 
-    JOB34 owns the family-selection semantics; JOB38 only consumes the result.
+    The family-selection semantics are defined elsewhere; this only consumes the result.
     """
     groups: dict[str, list[dict]] = defaultdict(list)
     for instance in instances:
@@ -263,7 +263,7 @@ def optional_lineage_audit(
             "lineages and reports the 47-mechanism sensitivity."
         ),
         "note": (
-            "template labels come from the source provenance (JOB04/JOB05/JOB06/JOB09); a "
+            "template labels come from the source provenance; a "
             "shared template is treated as a shared construction lineage"
         ),
     }
@@ -397,7 +397,7 @@ def build_assignment_table(
 ) -> dict:
     """Generate every main-episode assignment key for the frozen design.
 
-    ``patterns=(P0_BASE,)`` keeps the pre-JOB38 base table byte-compatible (plus the new
+    ``patterns=(P0_BASE,)`` keeps the earlier base table byte-compatible (plus the new
     ``organization_pattern`` fields).  Passing ``patterns=ENROLLED_PATTERNS`` returns the
     exact full cross: every base row appears once under each of P0_BASE/P1/P2/P3.
     """
@@ -576,7 +576,7 @@ def _default_simulation(
         )
         for repeats in repeats_grid
     }
-    # JOB46: the owner raised the cap.  The cap is selected prospectively from the frozen
+    # The owner raised the cap.  The cap is selected prospectively from the frozen
     # candidate grid and the frozen power rule, at the central scenario/ICC 0.20, with the
     # label test kept in the Holm family.  It is frozen in V13-PREREG-4 before any main
     # outcome; selection of the actual failure ids binds later.
@@ -1016,7 +1016,7 @@ def build_run_plan(
     breakdown = _pattern_call_breakdown(
         patterns, M=table["M"], repeats=repeats, U=U,
     )
-    # Base-grid core: the frozen JOB29 reconciliation keeps F<=120 and the 9-call retry.
+    # Base-grid core: the frozen reconciliation keeps F<=120 and the 9-call retry.
     base_detention_review = DETENTION_CAP_BASE * DETENTION_REVIEWS_PER_FAILURE
     base_retry_upper = (
         DETENTION_CAP_BASE * DETENTION_ARMS * DETENTION_RETRY_MAX_CALLS_PER_EPISODE
@@ -1059,7 +1059,7 @@ def build_run_plan(
         enrolled_main_avg + detention_review + retry_avg + calibration_avg + probe_calls
     )
     calls = {
-        # Base-grid core: these keys remain the frozen JOB29 state-machine reconciliation
+        # Base-grid core: these keys remain the frozen state-machine reconciliation
         # inputs (P0_BASE, 9-call state machine) and must not be redefined silently.
         "main_action_calls_avg": base_main_avg,
         "main_action_calls_upper": base_main_upper,
@@ -1098,31 +1098,31 @@ def build_run_plan(
             INFRA_RETRY_ATTEMPTS_PER_CALL * enrolled_system_upper
         ),
         "avg_basis": "PLANNING_ASSUMPTION_NOT_A_STATE_MACHINE_BOUND",
-        "upper_basis": "FROZEN_STATE_MACHINE_JOB29_PLUS_PATTERN_PRICING_JOB38",
+        "upper_basis": "FROZEN_STATE_MACHINE_PLUS_PATTERN_PRICING",
         "main_avg_calls_per_episode_assumed": 5.0,
         "retry_avg_calls_per_episode_assumed": 5.5,
         "main_upper_calls_per_episode": MAIN_MAX_CALLS_PER_EPISODE,
         "retry_upper_calls_per_episode": DETENTION_RETRY_MAX_CALLS_ENROLLED,
-        "upper_bounds_source": "artifacts/checkpoints/JOB29/state_machine.json",
+        "upper_bounds_source": "frozen call-state machine (not published)",
         "scope": {
-            "base_keys": "P0_BASE grid, 9-call state machine (JOB29 reconciliation inputs)",
+            "base_keys": "P0_BASE grid, 9-call state machine (reconciliation inputs)",
             "pattern_keys": "P1-P3 full cross, pattern-priced (P3 = 10 calls/episode)",
             "enrolled_keys": "authorized v1.3b envelope including the pattern factor",
             "system_total_upper": "enrolled envelope (all pattern levels)",
         },
         "note": (
             "main_action_calls_upper / detention_retry_calls_upper / "
-            "main_plus_detention_upper are the base-grid core consumed by the frozen JOB29 "
+            "main_plus_detention_upper are the base-grid core consumed by the frozen "
             "reconciliation.  system_total_upper is the authorized enrolled envelope: "
             f"{base_episodes} base episodes + {enrolled_episodes - base_episodes} pattern "
-            "episodes, the real terminal-report call (JOB35), and the P3 peer-delegation "
+            "episodes, the real terminal-report call, and the P3 peer-delegation "
             "call.  process_attempts_system_upper doubles this with the single identical "
             "infrastructure retry."
         ),
     }
     call_bounds = {
         "kind": "vera.v13_call_bounds.v3",
-        "state_machine": "artifacts/checkpoints/JOB29/state_machine.json",
+        "state_machine": "frozen call-state machine (not published)",
         "main_per_episode_upper": MAIN_MAX_CALLS_PER_EPISODE,
         "detention_retry_per_episode_upper": DETENTION_RETRY_MAX_CALLS_PER_EPISODE,
         "detention_retry_per_episode_upper_enrolled": DETENTION_RETRY_MAX_CALLS_ENROLLED,
@@ -1183,7 +1183,7 @@ def build_run_plan(
         "avg_calls": calibration_avg,
         "upper_calls": calibration_upper,
         "status": "DECLARED_PLANNING_BLOCK_PENDING_ROUTE_PREFLIGHT_BINDING",
-        "source": "JOB29 prompt-budget audit; not present in the JOB26 run-plan draft",
+        "source": "prompt-budget audit; not present in the earlier run-plan draft",
         "admission_rule": (
             "calibration tasks are separate frozen tasks with public expected outcomes; "
             "they may not be main episodes, holdout content or outcome-dependent"
@@ -1221,7 +1221,7 @@ def build_run_plan(
         "kind": "vera.v13_run_plan.v1",
         "version_id": "V13-RUN-PLAN-4",
         "supersedes_version_id": "V13-RUN-PLAN-3",
-        "status": "FROZEN_DRAFT_FOR_ASTRA_REVIEW_NOT_A_RESULT",
+        "status": "FROZEN_DRAFT_FOR_INDEPENDENT_REVIEW_NOT_A_RESULT",
         "source": manifest["source"],
         "condition_manifest_digest": manifest["manifest_digest"],
         "U": U,
@@ -1260,7 +1260,7 @@ def build_run_plan(
                                 r_D=repeats, r_A=repeats)
                 for pattern in patterns
             },
-            # detention_cap is the frozen JOB29 reconciliation input (base P0 core, 120).
+            # detention_cap is the frozen reconciliation input (base P0 core, 120).
             # The current owner-raised cap is detention_cap_enrolled and the detention block.
             "detention_cap": DETENTION_CAP_BASE,
             "detention_cap_base": DETENTION_CAP_BASE,
@@ -1306,7 +1306,7 @@ def build_run_plan(
                 "menu_position_seed",
             ],
             "scope_note": (
-                "actual_episodes is the P0_BASE grid used by the frozen JOB29 "
+                "actual_episodes is the P0_BASE grid used by the frozen "
                 "reconciliation; enrolled_episodes is the exact P0-P3 cross"
             ),
         },

@@ -1,4 +1,4 @@
-"""Harness configuration for each ownership contract (JOB21 item 1, second half).
+"""Harness configuration for each ownership contract (second half).
 
 The contract is prose plus rules; this module is the part the harness actually reads.  A
 ``PatternConfig`` is frozen before a cell is built, its digest is bound into the cell hash,

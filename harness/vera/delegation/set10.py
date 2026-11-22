@@ -1,4 +1,4 @@
-"""Read-only access to active set 10 (JOB17B).
+"""Read-only access to active set 10.
 
 Set 10 is self-contained: every mechanism record is stored in full in
 ``manifests/reliability/dev-active-set-10.json``.  Nothing here edits that file, the

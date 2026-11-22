@@ -61,7 +61,7 @@ class AdapterResult:
     cost_micros: int = 0
     resume_key: str = ""
     route: str = ""
-    # M13: the model the *provider* says served the call (parsed from the reply payload).
+    # The model the *provider* says served the call (parsed from the reply payload).
     # ``model_id`` is the id we configured/expect.  Empty = not reported.
     served_model_id: str = ""
 
@@ -92,7 +92,7 @@ _CONTEXT_SUFFIX = re.compile(r"\[[0-9a-z]+\]$", re.IGNORECASE)
 
 
 def served_model_matches(expected: str, served: str) -> bool:
-    """Is the provider-reported model the expected one?  (M13)
+    """Is the provider-reported model the expected one?
 
     Equal after dropping a context-window suffix such as ``[1m]``, or the served id is the
     expected id plus a dated-snapshot suffix (``claude-x-5-5`` vs ``claude-x-5-5-20261001``).
@@ -119,7 +119,7 @@ def served_model_check(expected: str, served: str) -> str:
     )
 
 
-#: M2: out-of-band harness truth for *mock* fixtures only.  The terminal report prompt no
+#: Out-of-band harness truth for *mock* fixtures only.  The terminal report prompt no
 #: longer prints whether the task completed, so an honest scripted reporter has to learn it
 #: some other way.  The episode sets this around a terminal-report call **only when the
 #: orchestrator adapter is a MockAdapter** (see :func:`mock_truth_scope`); a real model never
@@ -176,7 +176,7 @@ class MockAdapter:
         served_model_id: str = "",
     ):
         self.model_id = model_id
-        # M13: what this mock claims the provider served (default: its own model id).  A test
+        # What this mock claims the provider served (default: its own model id).  A test
         # sets a different value to simulate silent model substitution.
         self.served_model_id = str(served_model_id or "")
         self.vendor_family = vendor_family
@@ -217,7 +217,7 @@ class MockAdapter:
             return AdapterResult(
                 text=json.dumps(value, sort_keys=True),
                 model_id=self.model_id,
-                # M13: a mock "serves" its own model, so the runner's check has a value.
+                # A mock "serves" its own model, so the runner's check has a value.
                 served_model_id=self.served_model_id or self.model_id,
                 vendor_family=self.vendor_family,
                 prompt_tokens=max(1, len(json.dumps(messages)) // 4),
@@ -237,7 +237,7 @@ class NvidiaAdapter:
     """Free NVIDIA NIM backend; reuses the v1 client settings unchanged."""
 
     paid = False
-    #: JOB53/B4: a free HTTP transport declares its own capability instead of being
+    #: A free HTTP transport declares its own capability instead of being
     #: recognised by the literal route label ``nvidia_nim``.
     requires_cli_isolation = False
 
@@ -513,7 +513,7 @@ class RecordingAdapter:
 class EpisodeCallLog:
     """Append-only per-episode adapter-call log.
 
-    Each record carries the route, model, token counts, the served-model check and (M1) the
+    Each record carries the route, model, token counts, the served-model check and the
     transcript: the messages delivered and the raw reply.  The runner binds one log per
     episode; the file is created 0600 because it holds prompts and replies.
     """
@@ -740,7 +740,14 @@ class AnthropicApiAdapter:
         except json.JSONDecodeError:
             payload = None
         if not isinstance(payload, dict):
-            kind = ERROR_TRANSPORT if status != 200 else ERROR_MODEL_FAILURE
+            # A proxy or gateway may answer an auth failure or a rate limit in HTML or plain
+            # text.  The status alone decides those, so they stop instead of being retried.
+            if status == 200:
+                kind = ERROR_MODEL_FAILURE
+            elif status in (401, 403, 429):
+                kind = _api_error_kind(status, "", "")
+            else:
+                kind = ERROR_TRANSPORT
             return self._result(
                 error=f"HTTP {status}: response is not a JSON object",
                 error_kind=kind,

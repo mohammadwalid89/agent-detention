@@ -1,4 +1,4 @@
-"""VERA — verified execution, recovery and adaptation (W1 deterministic core)."""
+"""VERA — verified execution, recovery and adaptation (deterministic core)."""
 
 __version__ = "0.1.0-w1"
 SCHEMA_VERSION = "3.3-delegation"

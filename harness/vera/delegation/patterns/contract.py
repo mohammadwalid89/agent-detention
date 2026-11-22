@@ -1,4 +1,4 @@
-"""Written ownership contracts for the organisation-pattern factor (JOB21).
+"""Written ownership contracts for the organisation-pattern factor.
 
 A *pattern* is an ownership + authority contract, not a prompt.  The contract answers five
 questions mechanically, and each answer changes something the harness can check:

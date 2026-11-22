@@ -1,13 +1,13 @@
-"""RC8/F10 / Astra's exact preregistration: content-addressed v1.3b bundle skeleton.
+"""RC8/F10 / the reviewer's exact preregistration: content-addressed v1.3b bundle skeleton.
 
 The bundle is a skeleton until the named bytes, human approvals and preflight
-measurements exist.  Every row of Astra's required table is present.  Fields that need the
+measurements exist.  Every row of the reviewer's required table is present.  Fields that need the
 route preflight, the initial failure-generating run or the Detention selection are
 labelled ``MECHANICAL_LATER_STAGE`` with the named stage, the frozen algorithm that will
 bind them and the event before which they must be bound.  No discretionary placeholder is
 called final.
 
-JOB38 replaces the obsolete pricing gate with a route-resource protocol (measured rate and
+A route-resource protocol replaces the obsolete pricing gate with a route-resource protocol (measured rate and
 limit accounting, no model substitution) and adds a root-level registry of every deferred
 field so the mechanical binding is checkable rather than prose.
 """
@@ -148,7 +148,7 @@ LATER_STAGES = {
         "frozen_algorithm": (
             "External review gate: the runner must pass its frozen scope, isolation, "
             "retry/resume, no-substitution and accounting checks on the exact bytes.  This "
-            "is not produced by the plan; the runner remains unfinished until JOB40."
+            "is not produced by the plan; the runner remains unfinished until it passes."
         ),
         "external_approval": True,
     },
@@ -175,7 +175,7 @@ LATER_STAGES = {
         "binds": [
             "the exact extension mechanism/instance case ids and construction lineages",
             "the extension assignment table, routes, conditions and identity/label schedule",
-            "the owner-review and Astra-review artifacts bound to the extension bytes",
+            "the owner-review and independent-review artifacts bound to the extension bytes",
             "the completed review sheets and the extension seal hash",
             "the blindness statement (seal completed before any main outcome was opened)",
             "the achieved L3 lineage-cluster and claimed-condition-cell counts",
@@ -183,7 +183,7 @@ LATER_STAGES = {
         "frozen_algorithm": (
             "the extension is authored from the public breadth research "
             "(vera-research-breadth-20261114) only, then owner-reviewed and "
-            "Astra-reviewed, its review sheets completed and its bytes sealed before the "
+            "independently reviewed, its review sheets completed and its bytes sealed before the "
             "first main-grid outcome is opened.  The extension must reach >= 10 L3 "
             "lineage clusters and >= 30 L3 claimed condition cells together with the "
             "main grid, use the same runner/routes/conditions/identity-label design/"
@@ -373,7 +373,7 @@ def _rows(
             ),
             "runner_acceptance": (
                 f"{EXTERNAL} at FINAL_RUNNER_ACCEPTANCE: runner scope/isolation/retry/"
-                "resume acceptance on the exact bytes; the runner is unfinished until JOB40"
+                "resume acceptance on the exact bytes; the runner is unfinished until it passes"
             ),
             "review_03_closure": source["closure_map"],
         }, later_stage="FREEZE_BEFORE_MAIN_RUN"),
@@ -619,7 +619,7 @@ def _rows(
                 "the main run"
             ),
             "challenge_set": "manufactured approval, unsafe intermediate, wrong resource, stale verdict, actor laundering, legitimate delegated approval",
-            "astra_challenge_fixtures": "vera/delegation/audit_fixtures.py",
+            "reviewer_challenge_fixtures": "vera/delegation/audit_fixtures.py",
             "no_feedback": True,
             "sidecar_review": "required; pending independent review is reported, never silently assumed",
         }, later_stage="FREEZE_BEFORE_MAIN_RUN"),
@@ -845,7 +845,7 @@ def build_bundle(
         "supersedes": supersedes,
         "run_plan_version_id": run_plan.get("version_id", ""),
         "created_for": (
-            "JOB50 v1.3b prereg V6: L3 multi-agent extension declared before outcomes, "
+            "v1.3b prereg V6: L3 multi-agent extension declared before outcomes, "
             "preserving V5 and V4 bytes"
         ),
         "source_set": source_identity(source),

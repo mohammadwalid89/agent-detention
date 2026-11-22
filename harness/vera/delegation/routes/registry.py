@@ -1,4 +1,4 @@
-"""D4 route registry and adapter factory (JOB25).
+"""D4 route registry and adapter factory.
 
 ``registry.json`` is the frozen D4 identity menu.  The ``publisher`` field always names the
 organisation that trained the weights; ``route`` names how the call is transported
@@ -31,7 +31,7 @@ ADAPTERS = {
     "NvidiaAdapter": NvidiaAdapter,
 }
 
-#: JOB53/B4: the route vocabulary is resolved from data, but it stays closed and
+#: The route vocabulary is resolved from data, but it stays closed and
 #: fail-closed.  ``main_grid`` is the sealed D4 profile: it is the default, it refuses any
 #: override, and every unknown transport/publisher/adapter is rejected.  A non-main-grid
 #: registry may declare its own vocabulary only with an explicit ``profile: declared``
@@ -70,7 +70,7 @@ PILOT_PROFILE_CLAUDE_ONLY = "claude_only"
 def load_registry(path: str | Path | None = None, *, profile: str | None = None) -> dict:
     """Load and validate the route registry; raise ``ValueError`` on any defect.
 
-    ``profile="claude_only"`` (M11) loads the pilot profile: the two Claude routes only, with
+    ``profile="claude_only"`` loads the pilot profile: the two Claude routes only, with
     slot names O1 = Sonnet 5.5 and O2 = Haiku 5.5 (see ``identity_assignment``).  It is never
     the main grid.
     """
@@ -299,8 +299,8 @@ def validate_registry(data: Mapping) -> dict:
     excluded = data.get("excluded_models", [])
     if not isinstance(excluded, list):
         errors.append("excluded_models must be a list")
-    elif "gpt-6-astra" not in excluded:
-        errors.append("gpt-6-astra must be explicitly excluded (reviewer independence)")
+    elif "reviewer-model" not in excluded:
+        errors.append("reviewer-model must be explicitly excluded (reviewer independence)")
     return {
         "valid": not errors,
         "errors": errors,

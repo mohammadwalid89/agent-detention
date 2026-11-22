@@ -16,7 +16,7 @@ from . import HOLDOUT_FAMILIES
 from .canonical import canonical_json, sha256_file, sha256_text
 from .errors import HoldoutSealError
 
-BUILDER_IDENTITIES = frozenset({"builder", "optimizer", "deepseek-builder-w1", "vera-api"})
+BUILDER_IDENTITIES = frozenset({"builder", "optimizer", "model-builder", "vera-api"})
 SEAL_FILE = "SEAL.json"
 
 
@@ -56,7 +56,7 @@ def seal(
     identity: str = "",
     families: tuple[str, ...] = HOLDOUT_FAMILIES,
 ) -> SealStatus:
-    """Seal an already-authored holdout directory. Never called by the W1 builder."""
+    """Seal an already-authored holdout directory. Never called by the builder."""
     root = Path(root)
     ident = identity or os.environ.get("VERA_IDENTITY", "builder")
     if ident in BUILDER_IDENTITIES or author_id in BUILDER_IDENTITIES:
@@ -146,7 +146,7 @@ def verify_seal(
     holdout_root: str | Path,
     *,
     dev_manifest_path: str | Path,
-    dev_author_ids: tuple[str, ...] = ("deepseek-builder-w1",),
+    dev_author_ids: tuple[str, ...] = ("model-builder",),
 ) -> dict:
     """Full seal verification: hash, author separation, and seal-before-freeze ordering."""
     root = Path(holdout_root)

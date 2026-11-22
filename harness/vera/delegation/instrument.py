@@ -1,6 +1,6 @@
 """RC1 / D1: hash-bound source-set selection and review-03 closure map.
 
-The v1.3 instrument is derived only from the latest active set that has passed Astra's W1
+The v1.3 instrument is derived only from the latest active set that has passed the independent
 review.  The frozen D1 rule is: **set 11 if review 05 passed, else set 10**.  The builder
 cannot manufacture that review, so the default resolution is set 10 unless a caller supplies
 an affirmative review-05 pass (or writes the reviewed marker file).
@@ -27,9 +27,8 @@ SET_PATHS = {
     "12": RELIABILITY / "dev-active-set-12.json",
 }
 REVIEW_05_MARKER = ROOT / "artifacts" / "checkpoints" / "JOB24" / "ASTRA_W1_REVIEW_05_PASS.json"
-JOB24 = ROOT / "artifacts" / "checkpoints" / "JOB24"
 
-# JOB45: the attributable, hash-bound marker that admits set 12.  It is not a boolean: the
+# The attributable, hash-bound marker that admits set 12.  It is not a boolean: the
 # resolver re-hashes the marker, both owner rationale files, the combined projection, every
 # approval artifact and every current mechanism/sheet binding before it will select set 12.
 SET12_REVIEW_MARKER = (ROOT / "artifacts" / "review" / "approvals" / "set12"
@@ -37,7 +36,7 @@ SET12_REVIEW_MARKER = (ROOT / "artifacts" / "review" / "approvals" / "set12"
 SET12_DECLARATIONS = RELIABILITY / "dev-abstention-declarations-12.json"
 SET12_SHEETS = ROOT / "artifacts" / "review_sheets" / "set12"
 
-# JOB54: the L3 extension is a separate post-main-grid set.  Its attributable marker is not
+# The L3 extension is a separate post-main-grid set.  Its attributable marker is not
 # used by the main-grid source-set resolver, but the same marker consumer must be available
 # so the extension cannot be admitted without re-validating its complete owner chain.
 EXT_L3_REVIEW_MARKER = (ROOT / "artifacts" / "review" / "approvals" / "extL3_01"
@@ -45,7 +44,7 @@ EXT_L3_REVIEW_MARKER = (ROOT / "artifacts" / "review" / "approvals" / "extL3_01"
 EXT_L3_SEAL = (ROOT / "artifacts" / "review" / "approvals" / "extL3_01"
                / "EXT_L3_01_SEAL.json")
 EXT_L3_MANIFEST = RELIABILITY / "dev-extension-L3-01.json"
-_OWNER_MARKER_REVIEWER = "Mohammad (owner)"
+_OWNER_MARKER_REVIEWER = "owner"
 _OWNER_MARKER_TOKENS = (
     "PENDING", "UNREVIEWED", "TBD", "MODEL", "DEEPSEEK", "OPENAI", "GPT",
     "LLM", "ASSISTANT", "AI REVIEWER", "NOT HUMAN", "BUILDER",
@@ -53,7 +52,7 @@ _OWNER_MARKER_TOKENS = (
 _HEX64 = re.compile(r"^[0-9a-f]{64}$")
 
 # The four review-03 obligations, and the bytes/artifacts that close them.  These are
-# closure references, not a substitute for Astra's review: the reviewer verifies them.
+# closure references, not a substitute for the independent review: the reviewer verifies them.
 REVIEW03_CLOSURE = {
     "genuine_abstention": {
         "required": (
@@ -323,7 +322,7 @@ def _set12_marker_pass() -> bool:
         return False
     if reported.get("duplicate_mechanism_ids") != []:
         return False
-    # JOB48 (review-06 finding 2): every artifact goes through the ONE complete approval-chain
+    # Review-06 finding 2: every artifact goes through the ONE complete approval-chain
     # validator (protected source decision + canonical Markdown + all prior checks).  There is
     # no hand-maintained subset of approval checks in this resolver.
     try:
@@ -414,7 +413,7 @@ def resolve_source_set(review05_passed: bool | None = None) -> dict:
 
     ``review05_passed`` is retained for callers' provenance assertions but cannot select a
     set.  Set 12 requires the attributable, hash-bound owner-review marker; set 11 requires
-    the attributable W1 review-05 PASS artifact bound to the set-11 hash; absent either, the
+    the attributable review-05 PASS artifact bound to the set-11 hash; absent either, the
     rule selects set 10.
     """
     marker_ok = _marker_pass()

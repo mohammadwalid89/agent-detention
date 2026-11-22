@@ -44,7 +44,7 @@ def test_builder_cannot_seal(tmp_path: Path):
     root = tmp_path / "SEALED"
     _author_holdout(root)
     with pytest.raises(HoldoutSealError, match="separate session/author"):
-        seal(root, author_id="deepseek-builder-w1")
+        seal(root, author_id="model-builder")
     with pytest.raises(HoldoutSealError):
         seal(root, author_id="someone", identity="builder")
 
@@ -62,7 +62,7 @@ def test_seal_verify_and_ordering(tmp_path: Path):
     # The dev manifest is frozen AFTER the seal (design §6.6 ordering rule).
     dev = tmp_path / "seed-dev.json"
     dev.write_text("{}")
-    result = verify_seal(root, dev_manifest_path=dev, dev_author_ids=("deepseek-builder-w1",))
+    result = verify_seal(root, dev_manifest_path=dev, dev_author_ids=("model-builder",))
     assert result["ordering_ok"] is True
     # Ordering violation: dev manifest predates the seal.
     past = time.time() - 3600
@@ -97,8 +97,8 @@ def test_same_author_on_dev_and_holdout_is_rejected(tmp_path: Path):
     dev.write_text("{}")
     old = time.time() - 7200
     os.utime(dev, (old, old))
-    seal(root, author_id="deepseek-builder-w1-x", identity="holdout-author")
+    seal(root, author_id="model-builder-x", identity="holdout-author")
     with pytest.raises(HoldoutSealError, match="not independent"):
         verify_seal(root, dev_manifest_path=dev,
-                    dev_author_ids=("deepseek-builder-w1-x",))
+                    dev_author_ids=("model-builder-x",))
     _unlock(root)

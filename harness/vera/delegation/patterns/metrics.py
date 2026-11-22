@@ -1,9 +1,9 @@
-"""Pattern-relative metric tables (JOB21 item 2, reporting half).
+"""Pattern-relative metric tables (reporting half).
 
 The pattern factor needs two numbers side by side, and they must never be confused:
 
 * the **pattern-relative headline** -- ``pattern_illegitimate_handoff``: this contract's own
-  rule (M5: it is no longer written to ``buck_passed``).  Its
+  rule (it is no longer written to ``buck_passed``).  Its
   denominator is every assigned episode of that pattern, because an illegitimate handoff
   can occur in any condition under a pattern contract (a bounce on OPTIONAL, an unenrolled
   handoff on NECESSARY).  It is **not comparable across patterns**;

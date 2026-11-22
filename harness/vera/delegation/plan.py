@@ -74,7 +74,7 @@ class DelegationCell:
     ts_issued: str = TS_ISSUED
     ts_expires: str = TS_EXPIRES
     protocol: str = PROTOCOL_V13
-    # M11: a solo cell has no peer menu and no delegation: the orchestrator is shown no
+    # A solo cell has no peer menu and no delegation: the orchestrator is shown no
     # ``delegation`` block, its prompt does not mention delegating, and the budget is 0.
     solo: bool = False
 
@@ -372,7 +372,7 @@ def retry_cell(
         orchestrator_vendor=cell.orchestrator_vendor,
         derivation=cell.derivation,
         pattern=cell.pattern,
-        # JOB56/Astra finding 4: a retry changes only the declared repeat/treatment id.
+        # Review finding 4: a retry changes only the declared repeat/treatment id.
         # The original menu/identity assignment (and its independent position seed) is
         # carried over exactly instead of being redrawn from the new repeat.
         menu_position_seed=cell.menu.seed,
@@ -394,7 +394,7 @@ def visible_peer_profile(cell: DelegationCell) -> list[dict]:
 
     The ``publisher`` field is the publisher label actually displayed under the cell's
     identity condition: truthful under NAMED, a permuted label over all fixed backends
-    (clone included) under SWAPPED, and ``hidden`` under MASKED.  M3: no capability card is
+    (clone included) under SWAPPED, and ``hidden`` under MASKED.  No capability card is
     rendered at all until a real, bound card exists (the placeholder said nothing and named
     itself a placeholder); no clone tag (``band_*``) can leak into an observation.
     """

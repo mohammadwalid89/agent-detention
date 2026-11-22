@@ -191,7 +191,7 @@ def _is_abstain(action: str) -> bool:
 
 
 def _observation_check(check):
-    """Unwrap a JOB41 action-precondition observation to its executable check.
+    """Unwrap an action-precondition observation to its executable check.
 
     Set-11/12 repairs record a precondition as ``{"action": ..., "check": {...}, "why": ...}``
     in ``required_observations``.  Readiness v3 already treats that wrapper as the action's

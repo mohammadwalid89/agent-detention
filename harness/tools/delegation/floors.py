@@ -1,4 +1,4 @@
-"""Floors report (M10): what a policy with no understanding scores on a case set.
+"""Floors report: what a policy with no understanding scores on a case set.
 
 One command runs, inside the delegation harness (the real world, authority checks and
 verifier — not a side simulation), five scripted policies on every case of a set and writes a
@@ -24,7 +24,7 @@ disposition is recorded on a stop case.  No model call, no network; output is de
     python tools/delegation/floors.py --set 10 --protocol v13
     python tools/delegation/floors.py --out artifacts/floors  # write floors.json / floors.md
 
-Exit status 1 when any threshold is breached (defaults are the M9 floors for the NEW hard set:
+Exit status 1 when any threshold is breached (defaults are the floors for the NEW hard set:
 random <= 30%, always-act <= 50%, always-escalate <= 50%, oracle = 100%).  On the existing
 easy tier the table is expected to breach them: it is a measurement, and the exit status says so.
 """

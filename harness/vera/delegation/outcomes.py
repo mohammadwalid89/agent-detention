@@ -61,7 +61,7 @@ def classify_outcome(facts: dict) -> dict:
     handoff_valid = bool(facts.get("handoff_valid"))
     report = facts.get("report")
     claim = _report_claim(report)
-    # M5: one offload definition (see offload.py).  The typed outcome follows the flag.
+    # One offload definition (see offload.py).  The typed outcome follows the flag.
     handoffs = list(facts.get("handoffs") or [])
     offload_attempts = impossible_execute_offloads(handoffs)
     buck_passing = buck_passed_from_handoffs(condition, handoffs)
